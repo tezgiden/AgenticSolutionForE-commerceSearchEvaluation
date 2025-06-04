@@ -38,9 +38,14 @@ PRODUCT_TITLE_SELECTOR = ["div.name.longName", "h3.name.longName"] # Specific el
 PRODUCT_SKU_SELECTOR = ["span.sku-text", "span.vendor-value"] # Contains SKU, need to parse text
 PRODUCT_PRICE_SELECTOR = ["span.formatted-price", "div.price-wrapper"] # Contains prices
 PRODUCT_QUANTITY_SELECTOR = ["span.inventory-available"] # Contains available quantity
+NO_RESULTS_SELECTORS = [
+    "div.message-alert.info.p-3.message-no-item-alert",
+    "div.message-no-item-alert",
+    "div.message-alert"
+] # Elements that indicate no search results found
 MAX_RESULTS_PER_QUERY = 10 # Limit the number of results to scrape per search
-WAIT_TIMEOUT = 60 # Increased timeout to 20 seconds
-PAGE_LOAD_TIMEOUT = 90 # Timeout for initial page load
+WAIT_TIMEOUT = 10 # Reduced from 60 seconds
+PAGE_LOAD_TIMEOUT = 30 # Reduced from 90 seconds
 
 def setup_driver():
     """Sets up the Selenium WebDriver with improved Chrome options."""
@@ -79,8 +84,8 @@ def setup_driver():
     # Performance optimizations
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--disable-plugins")
-    chrome_options.add_argument("--disable-images")  # Optional: disable images for faster loading
-    chrome_options.add_argument("--disable-javascript")  # Remove this if site needs JS
+    chrome_options.add_argument("--disable-images")  # Disable images for faster loading
+    chrome_options.add_argument("--disable-javascript")  # Remove this line - site likely needs JS
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-setuid-sandbox")
     chrome_options.add_argument("--no-first-run")
@@ -125,8 +130,8 @@ def setup_driver():
         driver = webdriver.Chrome(service=service, options=chrome_options)
         
         # Additional driver configuration
-        driver.set_window_size(1920, 1080)  # Set window size for consistency
-        driver.implicitly_wait(10)  # Set implicit wait
+        driver.set_window_size(1280, 720)  # Smaller window size for better performance
+        driver.implicitly_wait(3)  # Reduced implicit wait
         
         print("WebDriver setup successful")
         return driver
@@ -135,6 +140,37 @@ def setup_driver():
         print(f"Error setting up WebDriver: {e}")
         return None
 
+def check_for_no_results(driver, search_term):
+    """Check if the search returned no results using multiple selectors."""
+    try:
+        for no_results_selector in NO_RESULTS_SELECTORS:
+            try:
+                no_results_element = driver.find_element(By.CSS_SELECTOR, no_results_selector)
+                if no_results_element.is_displayed():
+                    # Check if the text contains indicators of no results
+                    element_text = no_results_element.text.lower()
+                    no_results_indicators = [
+                        "0 results",
+                        "no results",
+                        "returned 0 results",
+                        "no items found",
+                        "no products found",
+                        f"results for \"{search_term.lower()}\"" and "0" in element_text
+                    ]
+                    
+                    for indicator in no_results_indicators:
+                        if indicator and indicator in element_text:
+                            print(f"No results detected: {element_text.strip()}")
+                            return True
+                            
+            except NoSuchElementException:
+                continue
+                
+        return False
+        
+    except Exception as e:
+        print(f"Error checking for no results: {e}")
+        return False
 def extract_sku_from_complex_html(sku_element):
     """Extract SKU from complex HTML structures with nested spans."""
     try:
@@ -213,19 +249,19 @@ def find_element_in_parent(parent_element, selectors):
         except NoSuchElementException:
             continue
     return None
-def find_element_with_multiple_selectors(driver, selectors, by=By.CSS_SELECTOR, wait_for_interactable=False):
-    """Try multiple selectors to find an element."""
+def find_element_with_multiple_selectors(driver, selectors, by=By.CSS_SELECTOR, wait_for_interactable=False, timeout=5):
+    """Try multiple selectors to find an element with shorter timeout for faster performance."""
     if isinstance(selectors, str):
         selectors = [selectors]  # Convert string to list for consistency
         
     for selector in selectors:
         try:
             if wait_for_interactable:
-                element = WebDriverWait(driver, WAIT_TIMEOUT).until(
+                element = WebDriverWait(driver, timeout).until(
                     EC.element_to_be_clickable((by, selector))
                 )
             else:
-                element = WebDriverWait(driver, WAIT_TIMEOUT).until(
+                element = WebDriverWait(driver, timeout).until(
                     EC.presence_of_element_located((by, selector))
                 )
             print(f"Found element with selector: {selector}")
@@ -265,14 +301,14 @@ def scrape_tundra(driver, search_term):
         # Wait for search input and enter search term with better error handling
         try:
             print("Looking for search input...")
-            search_input = find_element_with_multiple_selectors(driver, SEARCH_INPUT_SELECTORS, wait_for_interactable=True)
+            search_input = find_element_with_multiple_selectors(driver, SEARCH_INPUT_SELECTORS, wait_for_interactable=True, timeout=10)
             if not search_input:
                 print("Error: Could not find search input with any selector")
                 # Debug: print available input elements
                 inputs = driver.find_elements(By.TAG_NAME, "input")
                 print(f"Found {len(inputs)} input elements on page")
-                for i, inp in enumerate(inputs[:5]):  # Show first 5
-                    print(f"Input {i}: type='{inp.get_attribute('type')}', placeholder='{inp.get_attribute('placeholder')}', class='{inp.get_attribute('class')}'")
+                for i, inp in enumerate(inputs[:3]):  # Show first 3 only
+                    print(f"Input {i}: type='{inp.get_attribute('type')}', placeholder='{inp.get_attribute('placeholder')}'")
                 return results
                 
             search_input.clear()
@@ -286,20 +322,14 @@ def scrape_tundra(driver, search_term):
         # Find and click search button with better error handling
         try:
             print("Looking for search button...")
-            search_button = find_element_with_multiple_selectors(driver, SEARCH_BUTTON_SELECTORS, by=By.XPATH)
+            search_button = find_element_with_multiple_selectors(driver, SEARCH_BUTTON_SELECTORS, by=By.XPATH, timeout=5)
             if not search_button:
-                print("Error: Could not find search button with any selector")
-                # Debug: print available button elements
-                buttons = driver.find_elements(By.TAG_NAME, "button")
-                print(f"Found {len(buttons)} button elements on page")
-                for i, btn in enumerate(buttons[:5]):  # Show first 5
-                    print(f"Button {i}: text='{btn.text}', class='{btn.get_attribute('class')}'")
-                
+                print("Search button not found, trying Enter key...")
                 # Try pressing Enter instead
                 try:
                     from selenium.webdriver.common.keys import Keys
                     search_input.send_keys(Keys.RETURN)
-                    print("Pressed Enter to search instead of clicking button")
+                    print("Used Enter key as fallback")
                 except:
                     return results
             else:
@@ -320,23 +350,27 @@ def scrape_tundra(driver, search_term):
         # Wait for results with better error handling
         try:
             print("Waiting for search results...")
-            # Wait longer for results to load
-            time.sleep(5)
+            # Shorter wait time and immediate check
+            time.sleep(2)
             
-            product_card = find_element_with_multiple_selectors(driver, PRODUCT_CARD_SELECTORS)
+            # First check if we got a "no results" message
+            if check_for_no_results(driver, search_term):
+                print(f"Search for '{search_term}' returned no results.")
+                return results  # Return empty results list
+            
+            product_card = find_element_with_multiple_selectors(driver, PRODUCT_CARD_SELECTORS, timeout=8)
             if not product_card:
                 print("Error: Could not find product cards with any selector")
-                # Print current URL to see if we're on the right page
                 print(f"Current URL: {driver.current_url}")
-                # Print partial page source for debugging
-                page_source = driver.page_source
-                print(f"Page source length: {len(page_source)}")
-                if "no results" in page_source.lower() or "not found" in page_source.lower():
-                    print("No search results found for this query")
+                
+                # Double-check for no results message after waiting
+                if check_for_no_results(driver, search_term):
+                    print(f"Confirmed: Search for '{search_term}' returned no results.")
+                    return results
+                    
                 return results
                 
             print("Search results page loaded")
-            time.sleep(2)  # Allow dynamic content to load
             
         except Exception as e:
             print(f"Error waiting for results: {e}")
@@ -345,6 +379,15 @@ def scrape_tundra(driver, search_term):
         # Find all product cards
         product_cards = driver.find_elements(By.CSS_SELECTOR, PRODUCT_CARD_SELECTORS[0])
         print(f"Found {len(product_cards)} potential product cards.")
+        
+        # If no product cards found, do final check for no results message
+        if len(product_cards) == 0:
+            if check_for_no_results(driver, search_term):
+                print(f"Final confirmation: No results found for '{search_term}'")
+                return results
+            else:
+                print("No product cards found, but no 'no results' message detected either.")
+                return results
 
         # Extract data from each card
         for i, card in enumerate(product_cards):
@@ -472,7 +515,7 @@ def scrape_tundra(driver, search_term):
             # Only add if we found at least a title or URL
             if product_data["title"] != "N/A" or product_data["url"] != "N/A":
                 results.append(product_data)
-                print(f"-- Scraped Product {i+1}: Title: {product_data['title']}")
+                print(f"-- Scraped Product {i+1}: Title: {product_data['title'][:50]}{'...' if len(product_data['title']) > 50 else ''}")  # Truncate long titles
             else:
                 print(f"-- Skipped Product {i+1} due to missing title and URL.")
 
@@ -484,7 +527,8 @@ def scrape_tundra(driver, search_term):
     return results
 
 if __name__ == "__main__":
-    search_queries = ["gasket", "BK608", "brake pads toyota camry"]
+    # Include a test case with no results to verify the detection works
+    search_queries = ["gasket", "BK608", "brake pads toyota camry", "asdsadasdsad"]
     all_results = {}
 
     print("Setting up WebDriver...")
@@ -497,7 +541,7 @@ if __name__ == "__main__":
                 scraped_data = scrape_tundra(driver, query)
                 all_results[query] = scraped_data
                 print(f"--- Finished scrape for: {query}, Found {len(scraped_data)} results ---")
-                time.sleep(2)  # Delay between searches
+                time.sleep(1)  # Reduced delay between searches
 
         finally:
             print("\nClosing WebDriver...")
