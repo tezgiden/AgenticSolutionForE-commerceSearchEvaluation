@@ -1,0 +1,7 @@
+# Python dependencies for the agentic search solution
+
+requests
+selenium
+webdriver-manager # Optional, but simplifies ChromeDriver management
+# boto3 # Needed if interacting with S3 directly from the app
+# aws-cdk-lib # Needed for CDK deployment, but run locally, not in container
