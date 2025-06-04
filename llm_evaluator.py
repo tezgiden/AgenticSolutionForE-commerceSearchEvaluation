@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Optional, Union
 # --- Configuration ---
 OLLAMA_API_ENDPOINT = "http://localhost:11434/api/generate"
 DEFAULT_MODEL = "gemma3" #"llama3"  # Change to your preferred model (e.g., "llama3", "mistral", etc.)
-TIMEOUT = 60  # Seconds to wait for Ollama response
+TIMEOUT = 120  # Seconds to wait for Ollama response
 MAX_RETRIES = 3  # Number of retries for API calls
 
 # --- Search Type Classification ---

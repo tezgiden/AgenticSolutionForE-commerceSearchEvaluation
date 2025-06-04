@@ -1,32 +1,570 @@
 [
     {
         "query": "gasket",
-        "status": "scraping_failed",
-        "scraped_results": [],
-        "evaluation": null
+        "status": "success",
+        "search_type": "english_word",
+        "scraped_results": [
+            {
+                "title": "Mavrik - 8026531 - Gasket",
+                "part_number": "8026531",
+                "url": "https://www.tundrafmp.com/p/mavrik-8026531-gasket-8026531/",
+                "price": "$85.28",
+                "description": "N/A"
+            },
+            {
+                "title": "Mavrik - 8400210 - Gasket",
+                "part_number": "8400210",
+                "url": "https://www.tundrafmp.com/p/mavrik-8400210-gasket/",
+                "price": "$139.40",
+                "description": "N/A"
+            },
+            {
+                "title": "Mavrik - 321772 - Gasket",
+                "part_number": "321772",
+                "url": "https://www.tundrafmp.com/p/mavrik-321772-gasket/",
+                "price": "$14.71",
+                "description": "N/A"
+            },
+            {
+                "title": "Southbend - 1187010 - Gasket",
+                "part_number": "8007861",
+                "url": "https://www.tundrafmp.com/p/southbend-1187010-gasket-8007861/",
+                "price": "$1,500.14",
+                "description": "N/A"
+            },
+            {
+                "title": "Fisher - 10464 - Gasket",
+                "part_number": "16948",
+                "url": "https://www.tundrafmp.com/p/fisher-10464-gasket/",
+                "price": "$1.88",
+                "description": "N/A"
+            },
+            {
+                "title": "Hobart - 00-289464 - Gasket",
+                "part_number": "321660",
+                "url": "https://www.tundrafmp.com/p/hobart-00-289464-gasket/",
+                "price": "$13.20",
+                "description": "N/A"
+            },
+            {
+                "title": "Champion - 108345 - Gasket",
+                "part_number": "CHA108345",
+                "url": "https://www.tundrafmp.com/p/champion-108345-gasket/",
+                "price": "$7.40",
+                "description": "N/A"
+            },
+            {
+                "title": "Globe - 1274 - Gasket",
+                "part_number": "GLO1274",
+                "url": "https://www.tundrafmp.com/p/globe-1274-gasket-glo1274/",
+                "price": "$12.65",
+                "description": "N/A"
+            },
+            {
+                "title": "Southbend - 1187008 - Gasket",
+                "part_number": "8007860",
+                "url": "https://www.tundrafmp.com/p/southbend-1187008-gasket-8007860/",
+                "price": "$448.46",
+                "description": "N/A"
+            },
+            {
+                "title": "Cambro - 12102 - Gasket",
+                "part_number": "66455",
+                "url": "https://www.tundrafmp.com/p/cambro-12102-gasket-66455/",
+                "price": "$13.29",
+                "description": "N/A"
+            }
+        ],
+        "evaluation": [
+            {
+                "result_index": 0,
+                "relevance": "High",
+                "justification": "The title 'Mavrik - 8026531 - Gasket' and the URL clearly indicate a product being sold as a 'gasket'. The context of tundrafmp.com further supports this as a retailer of automotive parts."
+            },
+            {
+                "result_index": 1,
+                "relevance": "High",
+                "justification": "Similar to Result 0, the title 'Mavrik - 8400210 - Gasket' and the URL demonstrate a direct sale of a 'gasket' product. The consistent product description reinforces high relevance."
+            },
+            {
+                "result_index": 2,
+                "relevance": "High",
+                "justification": "The title 'Mavrik - 321772 - Gasket' and the URL confirm the product is a 'gasket'.  The product is clearly identified and sold as a gasket within this e-commerce context."
+            },
+            {
+                "result_index": 3,
+                "relevance": "Medium",
+                "justification": "This result, 'Southbend - 1187010 - Gasket', represents a gasket as part of a larger Southbend industrial equipment part. While a gasket is present, it's part of a more complex product \u2013 implying a more specialized application and therefore medium relevance within an automotive context."
+            },
+            {
+                "result_index": 4,
+                "relevance": "Medium",
+                "justification": "\u2018Fisher - 10464 - Gasket\u2019 is a gasket as a component of a Fisher equipment part, but it's still more specific than a general automotive gasket, so medium relevance is appropriate."
+            },
+            {
+                "result_index": 5,
+                "relevance": "Medium",
+                "justification": "\u2018Hobart - 00-289464 - Gasket\u2019 is again a gasket integrated into a larger Hobart equipment part, reducing its direct automotive relevance."
+            },
+            {
+                "result_index": 6,
+                "relevance": "Medium",
+                "justification": "\u2018Champion - 108345 - Gasket\u2019 shows a gasket within a Champion product, which limits the direct relevance to a standard automotive gasket."
+            },
+            {
+                "result_index": 7,
+                "relevance": "Low",
+                "justification": "\u2018Globe - 1274 - Gasket\u2019 indicates a gasket as part of a Globe valve, representing a significantly different and less directly relevant application compared to automotive gaskets."
+            },
+            {
+                "result_index": 8,
+                "relevance": "Low",
+                "justification": "\u2018Southbend - 1187008 - Gasket\u2019 is a gasket, but as part of an extremely large and specialized industrial machine, reducing its automotive relevance to near zero."
+            },
+            {
+                "result_index": 9,
+                "relevance": "Low",
+                "justification": "\u2018Cambro - 12102 - Gasket\u2019 represents a gasket used within a Cambro food service product; this is an entirely different industry/application."
+            }
+        ]
     },
     {
         "query": "BK608",
-        "status": "scraping_failed",
-        "scraped_results": [],
-        "evaluation": null
+        "status": "success",
+        "search_type": "part_number",
+        "scraped_results": [
+            {
+                "title": "Fisher - 10464 - Gasket",
+                "part_number": "16948",
+                "url": "https://www.tundrafmp.com/p/fisher-10464-gasket/",
+                "price": "$1.88",
+                "description": "N/A"
+            },
+            {
+                "title": "Mavrik - 321772 - Gasket",
+                "part_number": "321772",
+                "url": "https://www.tundrafmp.com/p/mavrik-321772-gasket/",
+                "price": "$14.71",
+                "description": "N/A"
+            },
+            {
+                "title": "Nexel - PT129ASB - 3-Tier 9-Door Blue Paramount Locker",
+                "part_number": "NEXPT129AS",
+                "url": "https://www.tundrafmp.com/p/nexel-pt129asb-3-tier-9-door-blue-paramount-locker-nexpt129as/",
+                "price": "$802.41",
+                "description": "N/A"
+            },
+            {
+                "title": "Cambro - 26CW135 - 1/2 Size 6 In Clear Camwear\u00ae Food Pan",
+                "part_number": "78426",
+                "url": "https://www.tundrafmp.com/p/cambro-26cw135-1-2-size-6-in-clear-camwear%C2%AE-food-pan-78426/",
+                "price": "$12.62",
+                "description": "N/A"
+            },
+            {
+                "title": "",
+                "part_number": "",
+                "url": "https://www.tundrafmp.com/p/midwest-801s-48-dba-door-sweep-8502223/",
+                "price": "",
+                "description": "N/A"
+            },
+            {
+                "title": "",
+                "part_number": "",
+                "url": "https://www.tundrafmp.com/p/midwest-18100cnb-door-sweep-8402248/",
+                "price": "",
+                "description": "N/A"
+            },
+            {
+                "title": "",
+                "part_number": "",
+                "url": "https://www.tundrafmp.com/p/mavrik-1271018-8-ft-door-sweep-gasket/",
+                "price": "",
+                "description": "N/A"
+            }
+        ],
+        "evaluation": [
+            {
+                "result_index": 0,
+                "relevance": "Low",
+                "justification": "The part number '16948' is completely different from the query 'BK608'. There's no relationship or similarity."
+            },
+            {
+                "result_index": 1,
+                "relevance": "Low",
+                "justification": "The part number '321772' does not match 'BK608'. It\u2019s a different number entirely."
+            },
+            {
+                "result_index": 2,
+                "relevance": "Low",
+                "justification": "The part number 'NEXPT129AS' is completely different from 'BK608'. The title contains 'PT129AS' which is a substring, but not a direct match."
+            },
+            {
+                "result_index": 3,
+                "relevance": "Low",
+                "justification": "The part number '78426' is completely different from 'BK608'.  There is no connection."
+            },
+            {
+                "result_index": 4,
+                "relevance": "Low",
+                "justification": "This result is empty and contains no part number, therefore it has no relevance."
+            },
+            {
+                "result_index": 5,
+                "relevance": "Low",
+                "justification": "This result is empty and contains no part number, therefore it has no relevance."
+            },
+            {
+                "result_index": 6,
+                "relevance": "Low",
+                "justification": "The part number '1271018' is completely different from 'BK608'. There\u2019s no relationship."
+            }
+        ]
     },
     {
         "query": "brake pads toyota camry",
-        "status": "scraping_failed",
-        "scraped_results": [],
-        "evaluation": null
+        "status": "success",
+        "search_type": "multiple_terms",
+        "scraped_results": [
+            {
+                "title": "Southbend - 1194600 - Carry Over Burner Bracket",
+                "part_number": "8007880",
+                "url": "https://www.tundrafmp.com/p/southbend-1194600-carry-over-burner-bracket-8007880/",
+                "price": "$26.70",
+                "description": "N/A"
+            },
+            {
+                "title": "Cooper-Atkins - 14235 - Thermometer Carrying Case",
+                "part_number": "1381112",
+                "url": "https://www.tundrafmp.com/p/cooper-atkins-14235-thermometer-carrying-case/",
+                "price": "$52.35",
+                "description": "N/A"
+            },
+            {
+                "title": "Bakers Pride - AS-R3198A - Lp Gas CARRY-OVE Orifice #74",
+                "part_number": "8002444",
+                "url": "https://www.tundrafmp.com/p/bakers-pride-as-r3198a-lp-gas-carry-ove-orifice-74-8002444/",
+                "price": "$22.03",
+                "description": "N/A"
+            },
+            {
+                "title": "Bakers Pride - BKPAS-2065860 - #71 Natural Gas Pilot Carry Over",
+                "part_number": "8002450",
+                "url": "https://www.tundrafmp.com/p/bakers-pride-bkpas-2065860-71-natural-gas-pilot-carry-over-8002450/",
+                "price": "$205.26",
+                "description": "N/A"
+            },
+            {
+                "title": "Bakers Pride - AS-2065861 - Lp #78 Bc/G CARRY-OVER Pilot",
+                "part_number": "8002451",
+                "url": "https://www.tundrafmp.com/p/bakers-pride-as-2065861-lp-78-bc-g-carry-over-pilot-8002451/",
+                "price": "$235.84",
+                "description": "N/A"
+            },
+            {
+                "title": "Carlisle - CB152012BR - 15 In X 20 In X 1/2 In Brown Cut-N-Carry\u00ae Cutting Board",
+                "part_number": "SANCB152012BR",
+                "url": "https://www.tundrafmp.com/p/carlisle-cb152012br-15-in-by-20-in-by-one-half-in-brown-cut-n-carry-cutting-board/",
+                "price": "$33.76",
+                "description": "N/A"
+            },
+            {
+                "title": "Carlisle - CB121812RD - 12 In X 18 In X 1/2 In Red Cut-N-Carry\u00ae Cutting Board",
+                "part_number": "76438",
+                "url": "https://www.tundrafmp.com/p/carlisle-cb121812rd-12-in-by-18-in-by-one-half-in-red-cut-n-carry-cutting-board/",
+                "price": "$24.34",
+                "description": "N/A"
+            },
+            {
+                "title": "Carlisle - CB121812WH - 12 In X 18 In X 1/2 In White Cut-N-Carry\u00ae Cutting Board",
+                "part_number": "8121553",
+                "url": "https://www.tundrafmp.com/p/carlisle-cb121812wh-12-in-by-18-in-by-one-half-in-white-cut-n-carry-cutting-board/",
+                "price": "$30.01",
+                "description": "N/A"
+            },
+            {
+                "title": "Carlisle - CB182412YL - 18 In X 24 In X 1/2 In Yellow Cut-N-Carry\u00ae Cutting Board",
+                "part_number": "SANCB182412YL",
+                "url": "https://www.tundrafmp.com/p/carlisle-cb182412yl-18-in-by-24-in-by-one-half-in-yellow-cut-n-carry-cutting-board/",
+                "price": "$48.57",
+                "description": "N/A"
+            },
+            {
+                "title": "Carlisle - CB182412WH - 18 In X 24 In X 1/2 In White Cut-N-Carry\u00ae Cutting Board",
+                "part_number": "8121552",
+                "url": "https://www.tundrafmp.com/p/carlisle-cb182412wh-18-in-by-24-in-by-one-half-in-white-cut-n-carry-cutting-board/",
+                "price": "$37.82",
+                "description": "N/A"
+            }
+        ],
+        "evaluation": [
+            {
+                "result_index": 0,
+                "relevance": "Low",
+                "justification": "This result is a burner bracket, completely unrelated to 'brake pads' or 'Toyota Camry'. It doesn't contain any of the key terms."
+            },
+            {
+                "result_index": 1,
+                "relevance": "Low",
+                "justification": "This is a thermometer carrying case. It has no relation to brake pads or a Toyota Camry. The title and part number are irrelevant."
+            },
+            {
+                "result_index": 2,
+                "relevance": "Low",
+                "justification": "This is an LP gas carry-over orifice. It contains 'carry-over' but doesn't include 'brake pads' or the brand/model 'Toyota Camry'. The details are completely unrelated."
+            },
+            {
+                "result_index": 3,
+                "relevance": "Low",
+                "justification": "This is a natural gas pilot carry-over, again containing 'carry-over' but lacking 'brake pads' and the target vehicle."
+            },
+            {
+                "result_index": 4,
+                "relevance": "Low",
+                "justification": "This result is a LP carry-over pilot, focusing on a specific part and not addressing the query's core elements."
+            },
+            {
+                "result_index": 5,
+                "relevance": "Low",
+                "justification": "This is a cutting board. It has no connection to brakes or the Toyota Camry vehicle.  The title contains 'Carry-N-Carry' which is a descriptive term, but doesn't satisfy the requirement for brake pads."
+            },
+            {
+                "result_index": 6,
+                "relevance": "Low",
+                "justification": "Another cutting board.  Similar to result 5, this contains irrelevant terms and doesn't relate to brake pads or the specified vehicle."
+            },
+            {
+                "result_index": 7,
+                "relevance": "Low",
+                "justification": "A further cutting board with a different color. The title contains 'Carry-N-Carry' but completely misses the 'brake pads' and 'Toyota Camry' keywords."
+            },
+            {
+                "result_index": 8,
+                "relevance": "Low",
+                "justification": "A final cutting board result. The name continues to include 'Carry-N-Carry' and does not relate to brake pads or the Toyota Camry."
+            }
+        ]
     },
     {
         "query": "513188",
-        "status": "scraping_failed",
-        "scraped_results": [],
-        "evaluation": null
+        "status": "success",
+        "search_type": "part_number",
+        "scraped_results": [
+            {
+                "title": "Fisher - 10464 - Gasket",
+                "part_number": "16948",
+                "url": "https://www.tundrafmp.com/p/fisher-10464-gasket/",
+                "price": "$1.88",
+                "description": "N/A"
+            },
+            {
+                "title": "Mavrik - 321772 - Gasket",
+                "part_number": "321772",
+                "url": "https://www.tundrafmp.com/p/mavrik-321772-gasket/",
+                "price": "$14.71",
+                "description": "N/A"
+            },
+            {
+                "title": "Nexel - PT129ASB - 3-Tier 9-Door Blue Paramount Locker",
+                "part_number": "NEXPT129AS",
+                "url": "https://www.tundrafmp.com/p/nexel-pt129asb-3-tier-9-door-blue-paramount-locker-nexpt129as/",
+                "price": "$802.41",
+                "description": "N/A"
+            },
+            {
+                "title": "Cambro - 26CW135 - 1/2 Size 6 In Clear Camwear\u00ae Food Pan",
+                "part_number": "78426",
+                "url": "https://www.tundrafmp.com/p/cambro-26cw135-1-2-size-6-in-clear-camwear%C2%AE-food-pan-78426/",
+                "price": "$12.62",
+                "description": "N/A"
+            },
+            {
+                "title": "",
+                "part_number": "",
+                "url": "https://www.tundrafmp.com/p/midwest-801s-48-dba-door-sweep-8502223/",
+                "price": "",
+                "description": "N/A"
+            },
+            {
+                "title": "",
+                "part_number": "",
+                "url": "https://www.tundrafmp.com/p/midwest-18100cnb-door-sweep-8402248/",
+                "price": "",
+                "description": "N/A"
+            },
+            {
+                "title": "",
+                "part_number": "",
+                "url": "https://www.tundrafmp.com/p/mavrik-1271018-8-ft-door-sweep-gasket/",
+                "price": "",
+                "description": "N/A"
+            }
+        ],
+        "evaluation": [
+            {
+                "result_index": 0,
+                "relevance": "Low",
+                "justification": "The part number in Result 0 is 16948, which is completely different from the query part number '513188'. There is no similarity."
+            },
+            {
+                "result_index": 1,
+                "relevance": "Low",
+                "justification": "The part number in Result 1 is 321772, which is entirely distinct from '513188'. No connection is present."
+            },
+            {
+                "result_index": 2,
+                "relevance": "Low",
+                "justification": "The part number in Result 2 is NEXPT129AS. This is a completely different part number and does not relate to '513188'."
+            },
+            {
+                "result_index": 3,
+                "relevance": "Low",
+                "justification": "The part number in Result 3 is 78426. This is a distinct part number with no connection to the query part number '513188'."
+            },
+            {
+                "result_index": 4,
+                "relevance": "Low",
+                "justification": "Result 4 has empty part number and title, indicating no relevant part number for the query."
+            },
+            {
+                "result_index": 5,
+                "relevance": "Low",
+                "justification": "Result 5 has empty part number and title, indicating no relevant part number for the query."
+            },
+            {
+                "result_index": 6,
+                "relevance": "Low",
+                "justification": "The part number in Result 6 is 1271018. This is a completely separate part number and does not match the query '513188'."
+            }
+        ]
     },
     {
         "query": "commercial refrigerator",
-        "status": "scraping_failed",
-        "scraped_results": [],
-        "evaluation": null
+        "status": "success",
+        "search_type": "multiple_terms",
+        "scraped_results": [
+            {
+                "title": "True - TUC-48-HC - 48 In 2 Door Undercounter Refrigerator",
+                "part_number": "TRUTUC48",
+                "url": "https://www.tundrafmp.com/p/true-tuc-48-hc-48-in-2-door-undercounter-refrigerator/",
+                "price": "$3,374.06",
+                "description": "N/A"
+            },
+            {
+                "title": "True - TUC-27-HC RH - 27 In 1 Door Undercounter Refrigerator",
+                "part_number": "TRUTUC27RH",
+                "url": "https://www.tundrafmp.com/p/true-tuc-27-hc-rh-27-in-1-door-undercounter-refrigerator/",
+                "price": "$2,246.55",
+                "description": "N/A"
+            },
+            {
+                "title": "True - TS-23-HC - 1 Solid Door TS Series Reach-In Refrigerator",
+                "part_number": "TRUTS23RH",
+                "url": "https://www.tundrafmp.com/p/true-ts-23-hc-1-solid-door-ts-series-reach-in-refrigerator/",
+                "price": "$4,255.58",
+                "description": "N/A"
+            },
+            {
+                "title": "True - TWT-48-HC - 48 In 2 Door Worktop Refrigerator",
+                "part_number": "TRUTWT48",
+                "url": "https://www.tundrafmp.com/p/true-twt-48-hc-48-in-2-door-worktop-refrigerator/",
+                "price": "$3,467.75",
+                "description": "N/A"
+            },
+            {
+                "title": "True - T-49-HC - 2 Solid Door TS Series Reach-In Refrigerator",
+                "part_number": "TRUT49",
+                "url": "https://www.tundrafmp.com/p/true-t-49-hc-2-solid-door-ts-series-reach-in-refrigerator/",
+                "price": "$4,993.55",
+                "description": "N/A"
+            },
+            {
+                "title": "True - TWT-27-HC LH - 27 In 1 Door Worktop Refrigerator W/ Left Hand Door",
+                "part_number": "TRUTWT27LH",
+                "url": "https://www.tundrafmp.com/p/true-twt-27-hc-lh-27-in-1-door-worktop-refrigerator-with-left-hand-door/",
+                "price": "$2,312.74",
+                "description": "N/A"
+            },
+            {
+                "title": "True - TWT-27-HC RH - 27 In 1 Door Worktop Refrigerator W/ Right Hand Door",
+                "part_number": "TRUTWT27RH",
+                "url": "https://www.tundrafmp.com/p/true-twt-27-hc-rh-27-in-1-door-worktop-refrigerator-with-right-hand-door/",
+                "price": "$2,312.74",
+                "description": "N/A"
+            },
+            {
+                "title": "True - T-23-HC - 1 Solid Door TS Series Reach-In Refrigerator",
+                "part_number": "TRUT23RH",
+                "url": "https://www.tundrafmp.com/p/true-t-23-hc-1-solid-door-ts-series-reach-in-refrigerator/",
+                "price": "$3,754.53",
+                "description": "N/A"
+            },
+            {
+                "title": "True - T-23-HC LH - 1 Solid Door TS Series Reach-In Refrigerator",
+                "part_number": "TRUT23LH",
+                "url": "https://www.tundrafmp.com/p/true-t-23-hc-lh-1-solid-door-ts-series-reach-in-refrigerator/",
+                "price": "$3,754.53",
+                "description": "N/A"
+            },
+            {
+                "title": "Mavrik - 2351033 - Refrigeration Gasket",
+                "part_number": "2351033",
+                "url": "https://www.tundrafmp.com/p/mavrik-2351033-refrigeration-gasket/",
+                "price": "$14.86",
+                "description": "N/A"
+            }
+        ],
+        "evaluation": [
+            {
+                "result_index": 0,
+                "relevance": "High",
+                "justification": "The title 'True - TUC-48-HC - 48 In 2 Door Undercounter Refrigerator' directly matches key terms: 'commercial refrigerator', '48 In', and '2 Door'. The product is a refrigerator, relevant to the query."
+            },
+            {
+                "result_index": 1,
+                "relevance": "High",
+                "justification": "The title 'True - TUC-27-HC RH - 27 In 1 Door Undercounter Refrigerator' matches the key terms: 'commercial refrigerator', '27 In', '1 Door'. It is a refrigerator and fits the size constraints."
+            },
+            {
+                "result_index": 2,
+                "relevance": "Medium",
+                "justification": "The title 'True - TS-23-HC - 1 Solid Door TS Series Reach-In Refrigerator' contains 'commercial refrigerator' and '23' which partially matches the query, but it's a 'Reach-In' refrigerator which may not be the specific type the user is looking for. It has some overlap, but the 'Reach-In' specification reduces relevance."
+            },
+            {
+                "result_index": 3,
+                "relevance": "Medium",
+                "justification": "The title 'True - TWT-48-HC - 48 In 2 Door Worktop Refrigerator' includes 'commercial refrigerator', '48 In', and '2 Door', matching the core requirements. 'Worktop' is a less common refrigerator type and could be a detail change that makes it less ideal"
+            },
+            {
+                "result_index": 4,
+                "relevance": "Medium",
+                "justification": "The title 'True - T-49-HC - 2 Solid Door TS Series Reach-In Refrigerator' contains 'commercial refrigerator', '49 In' and '2 Solid Door'. This matches the size requirements but 'Reach-In' makes this less ideal than options that don't have this specification"
+            },
+            {
+                "result_index": 5,
+                "relevance": "Medium",
+                "justification": "The title 'True - TWT-27-HC LH - 27 In 1 Door Worktop Refrigerator W/ Left Hand Door' matches 'commercial refrigerator' and '27 In'.  The specification 'Left Hand Door' is a minor detail that decreases relevance, and the 'Worktop' reduces overall relevance."
+            },
+            {
+                "result_index": 6,
+                "relevance": "Medium",
+                "justification": "The title 'True - TWT-27-HC RH - 27 In 1 Door Worktop Refrigerator W/ Right Hand Door' includes 'commercial refrigerator', '27 In', and '1 Door'.  Similar to the previous result, this matches some key terms but the 'Worktop' and 'Right Hand Door' specification reduces relevance."
+            },
+            {
+                "result_index": 7,
+                "relevance": "Low",
+                "justification": "The title 'True - T-23-HC - 1 Solid Door TS Series Reach-In Refrigerator' includes 'commercial refrigerator' and '23' which partially matches the query, but it's a 'Reach-In' refrigerator,  decreasing its overall relevance to the general request."
+            },
+            {
+                "result_index": 8,
+                "relevance": "Low",
+                "justification": "The title 'True - T-23-HC LH - 1 Solid Door TS Series Reach-In Refrigerator' includes 'commercial refrigerator' and '23', but it is a 'Reach-In' refrigerator and this is a less appropriate refrigerator type compared to the other results, making it less relevant."
+            },
+            {
+                "result_index": 9,
+                "relevance": "Low",
+                "justification": "This result is a refrigeration gasket, completely unrelated to a commercial refrigerator."
+            }
+        ]
     }
 ]
