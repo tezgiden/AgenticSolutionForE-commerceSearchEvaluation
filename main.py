@@ -8,11 +8,23 @@ from llm_evaluator import evaluate_search_results, classify_search_type, DEFAULT
 
 # --- Configuration ---
 INPUT_SEARCH_TASKS = [
-    {"query": "gasket"},
+    {"query": "4707Q"},
     {"query": "BK608"},
-    {"query": "brake pads toyota camry"},
+    {"query": "armada 4707q"},
     {"query": "513188"}, # Another part number example
-    {"query": "commercial refrigerator"} # Another english word example
+    {"query": "VS17573T"},   # Another english word example
+    {"query": "gunite 1140"},   # Another english word example
+    {"query": "truck-lite"},   # Another english word example 
+    {"query": "trucklite"},   # Another english word example 
+    {"query": "air drier"},   # Another english word example 
+    {"query": "air dryer"},   # Another english word example 
+    {"query": "TQ16010"},   # Another english word example 
+    {"query": "Armada Battery"},   # Another english word example 
+    {"query": "K2924"},   # Another english word example 
+    {"query": "Brake Drum"},   # Another english word example 
+    {"query": "brake chamber"},   # Another english word example 
+    {"query": "Wheel nut"},   # Another english word example 
+    {"query": "air spring"},   # Another english word example    
 ]
 OUTPUT_FILE = "final_evaluation_results.json"
 # Optional: Read tasks from a file instead

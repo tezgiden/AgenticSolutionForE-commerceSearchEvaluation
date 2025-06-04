@@ -14,7 +14,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 # Assuming chromedriver is installed and in PATH or specify path
 # service = Service("/path/to/chromedriver")
 CHROME_DRIVER_PATH = None # Set to None to use webdriver-manager or specify path
-TARGET_URL = "https://www.tundrafmp.com/"
+TARGET_URL = "https://www.truckpro.com/" #"https://www.tundrafmp.com/"
 # Updated selectors with multiple options
 SEARCH_INPUT_SELECTORS = [
     "#searchInput",
@@ -34,9 +34,10 @@ PRODUCT_CARD_SELECTORS = [
     "div.search-result-item"
 ]
 PRODUCT_LINK_SELECTOR = "a.link" # Contains title and href
-PRODUCT_TITLE_SELECTOR = "div.name.longName" # Specific element for title text
-PRODUCT_SKU_SELECTOR = "span.sku-text" # Contains SKU, need to parse text
-PRODUCT_PRICE_SELECTOR = "span.formatted-price" # Contains prices
+PRODUCT_TITLE_SELECTOR = ["div.name.longName", "h3.name.longName"] # Specific element for title text
+PRODUCT_SKU_SELECTOR = ["span.sku-text", "span.vendor-value"] # Contains SKU, need to parse text
+PRODUCT_PRICE_SELECTOR = ["span.formatted-price", "div.price-wrapper"] # Contains prices
+PRODUCT_QUANTITY_SELECTOR = ["span.inventory-available"] # Contains available quantity
 MAX_RESULTS_PER_QUERY = 10 # Limit the number of results to scrape per search
 WAIT_TIMEOUT = 60 # Increased timeout to 20 seconds
 PAGE_LOAD_TIMEOUT = 90 # Timeout for initial page load
@@ -134,8 +135,89 @@ def setup_driver():
         print(f"Error setting up WebDriver: {e}")
         return None
 
+def extract_sku_from_complex_html(sku_element):
+    """Extract SKU from complex HTML structures with nested spans."""
+    try:
+        # Method 1: Check for hidden input with SKU value
+        try:
+            hidden_input = sku_element.find_element(By.CSS_SELECTOR, "input[name='sku-id']")
+            return hidden_input.get_attribute("value")
+        except NoSuchElementException:
+            pass
+        
+        # Method 2: Extract from vendor-value spans (concatenate all text from spans)
+        vendor_value = sku_element.find_element(By.CSS_SELECTOR, "span.vendor-value")
+        
+        # Get all direct child spans that contain text (exclude hidden elements)
+        spans = vendor_value.find_elements(By.CSS_SELECTOR, "span:not(.d-none)")
+        sku_parts = []
+        
+        for span in spans:
+            text = span.text.strip()
+            if text and not any(char in text for char in ['✓', '☑', '✔']):  # Exclude checkmark text
+                sku_parts.append(text)
+        
+        if sku_parts:
+            return ''.join(sku_parts)
+        
+        # Method 3: Fallback to getting all text and cleaning it
+        full_text = vendor_value.text.strip()
+        # Remove common non-SKU text
+        full_text = full_text.replace('✓', '').replace('☑', '').replace('✔', '').strip()
+        return full_text
+        
+    except NoSuchElementException:
+        # Method 4: Simple text extraction
+        return sku_element.text.strip()
+
+def extract_price_from_complex_html(price_element):
+    """Extract price from complex HTML structures."""
+    try:
+        # Method 1: Check if it's a price-wrapper with separate dollar and cents
+        if "price-wrapper" in price_element.get_attribute("class"):
+            spans = price_element.find_elements(By.TAG_NAME, "span")
+            price_parts = []
+            
+            for span in spans:
+                text = span.text.strip()
+                # Skip "(each)" and similar text
+                if text and not text.startswith("(") and not text.endswith(")"):
+                    price_parts.append(text)
+            
+            if price_parts:
+                # Join dollar and cents parts
+                return ''.join(price_parts[:2])  # Usually $XX and .YY
+        
+        # Method 2: Simple text extraction
+        return price_element.text.strip()
+        
+    except Exception:
+        return price_element.text.strip()
+
+def extract_quantity_from_html(quantity_element):
+    """Extract quantity from inventory HTML."""
+    try:
+        # Get the numeric value from inventory-available span
+        return quantity_element.text.strip()
+    except Exception:
+        return "N/A"
+def find_element_in_parent(parent_element, selectors):
+    """Try multiple selectors to find an element within a parent element."""
+    if isinstance(selectors, str):
+        selectors = [selectors]  # Convert string to list for consistency
+    
+    for selector in selectors:
+        try:
+            element = parent_element.find_element(By.CSS_SELECTOR, selector)
+            return element
+        except NoSuchElementException:
+            continue
+    return None
 def find_element_with_multiple_selectors(driver, selectors, by=By.CSS_SELECTOR, wait_for_interactable=False):
     """Try multiple selectors to find an element."""
+    if isinstance(selectors, str):
+        selectors = [selectors]  # Convert string to list for consistency
+        
     for selector in selectors:
         try:
             if wait_for_interactable:
@@ -274,16 +356,43 @@ def scrape_tundra(driver, search_term):
                 "part_number": "N/A",
                 "url": "N/A",
                 "price": "N/A",
+                "quantity": "N/A",
                 "description": "N/A"
             }
 
             try:
                 # Extract Title and URL from the main product link
-                link_element = card.find_element(By.CSS_SELECTOR, PRODUCT_LINK_SELECTOR + " " + PRODUCT_TITLE_SELECTOR)
-                product_data["title"] = link_element.text.strip()
-                # Get URL from the parent 'a' tag
-                url_element = link_element.find_element(By.XPATH, "./ancestor::a")
-                product_data["url"] = url_element.get_attribute("href")
+                # First try to find the title element using multiple selectors
+                title_element = None
+                for title_selector in PRODUCT_TITLE_SELECTOR:
+                    try:
+                        title_element = card.find_element(By.CSS_SELECTOR, PRODUCT_LINK_SELECTOR + " " + title_selector)
+                        break
+                    except NoSuchElementException:
+                        continue
+                
+                if title_element:
+                    product_data["title"] = title_element.text.strip()
+                    # Get URL from the parent 'a' tag
+                    url_element = title_element.find_element(By.XPATH, "./ancestor::a")
+                    product_data["url"] = url_element.get_attribute("href")
+                else:
+                    # Fallback: try to find title in different structure
+                    link_element = card.find_element(By.CSS_SELECTOR, PRODUCT_LINK_SELECTOR)
+                    product_data["url"] = link_element.get_attribute("href")
+                    
+                    # Try each title selector directly in the link
+                    for title_selector in PRODUCT_TITLE_SELECTOR:
+                        try:
+                            title_element = link_element.find_element(By.CSS_SELECTOR, title_selector)
+                            product_data["title"] = title_element.text.strip()
+                            break
+                        except NoSuchElementException:
+                            continue
+                    
+                    # Final fallback: use link text
+                    if product_data["title"] == "N/A":
+                        product_data["title"] = link_element.text.strip()
                 
             except NoSuchElementException:
                 print(f"Warning: Could not find title/URL for product {i+1}")
@@ -296,22 +405,69 @@ def scrape_tundra(driver, search_term):
                     print(f"Warning: Could not find any link for product {i+1}")
 
             try:
-                # Extract SKU (Part Number)
-                sku_element = card.find_element(By.CSS_SELECTOR, PRODUCT_SKU_SELECTOR)
-                sku_text = sku_element.text.strip()
-                if "SKU:" in sku_text:
-                    product_data["part_number"] = sku_text.split("SKU:")[-1].strip()
+                # Extract SKU (Part Number) with enhanced parsing
+                sku_element = None
+                for sku_selector in PRODUCT_SKU_SELECTOR:
+                    try:
+                        sku_element = card.find_element(By.CSS_SELECTOR, sku_selector)
+                        break
+                    except NoSuchElementException:
+                        continue
+                
+                if sku_element:
+                    extracted_sku = extract_sku_from_complex_html(sku_element)
+                    
+                    # Clean up the SKU text
+                    if "Vendor Part #:" in extracted_sku:
+                        product_data["part_number"] = extracted_sku.split("Vendor Part #:")[-1].strip()
+                    elif "SKU:" in extracted_sku:
+                        product_data["part_number"] = extracted_sku.split("SKU:")[-1].strip()
+                    else:
+                        product_data["part_number"] = extracted_sku
                 else:
-                    product_data["part_number"] = sku_text
-            except NoSuchElementException:
-                print(f"Warning: Could not find SKU for product {i+1}")
+                    print(f"Warning: Could not find SKU for product {i+1}")
+                    
+            except Exception as e:
+                print(f"Warning: Error extracting SKU for product {i+1}: {e}")
 
             try:
-                # Extract Price
-                price_element = card.find_element(By.CSS_SELECTOR, PRODUCT_PRICE_SELECTOR)
-                product_data["price"] = price_element.text.strip()
-            except NoSuchElementException:
-                print(f"Warning: Could not find price for product {i+1}")
+                # Extract Price using multiple selectors with enhanced parsing
+                price_element = None
+                for price_selector in PRODUCT_PRICE_SELECTOR:
+                    try:
+                        price_element = card.find_element(By.CSS_SELECTOR, price_selector)
+                        break
+                    except NoSuchElementException:
+                        continue
+                
+                if price_element:
+                    extracted_price = extract_price_from_complex_html(price_element)
+                    product_data["price"] = extracted_price
+                else:
+                    print(f"Warning: Could not find price for product {i+1}")
+                    
+            except Exception as e:
+                print(f"Warning: Error extracting price for product {i+1}: {e}")
+
+            try:
+                # Extract Quantity (New field)
+                quantity_element = None
+                for quantity_selector in PRODUCT_QUANTITY_SELECTOR:
+                    try:
+                        quantity_element = card.find_element(By.CSS_SELECTOR, quantity_selector)
+                        break
+                    except NoSuchElementException:
+                        continue
+                
+                if quantity_element:
+                    extracted_quantity = extract_quantity_from_html(quantity_element)
+                    product_data["quantity"] = extracted_quantity
+                else:
+                    # Quantity might not always be available, so this is not an error
+                    pass
+                    
+            except Exception as e:
+                print(f"Warning: Error extracting quantity for product {i+1}: {e}")
 
             # Only add if we found at least a title or URL
             if product_data["title"] != "N/A" or product_data["url"] != "N/A":
