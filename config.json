@@ -1,0 +1,211 @@
+{
+  "site_configs": {
+    "truckpro": {
+      "site_name": "TruckPro",
+      "target_url": "https://www.truckpro.com/",
+      "search_tasks": [
+        {"query": "4707Q"},
+        {"query": "BK608"},
+        {"query": "armada 4707q"},
+        {"query": "513188"},
+        {"query": "VS17573T"},
+        {"query": "gunite 1140"},
+        {"query": "truck-lite"},
+        {"query": "trucklite"},
+        {"query": "air drier"},
+        {"query": "air dryer"},
+        {"query": "TQ16010"},
+        {"query": "Armada Battery"},
+        {"query": "K2924"},
+        {"query": "Brake Drum"},
+        {"query": "brake chamber"},
+        {"query": "Wheel nut"},
+        {"query": "air spring"}
+      ],
+      "inventory_test_cases": [
+        {"query": "ABCD", "search_type": "part_number"},
+        {"query": "brake pad", "search_type": "english_word"},
+        {"query": "toyota brake pad", "search_type": "multiple_terms"}
+      ],
+      "scraping_config": {
+        "search_input_selectors": [
+          "#searchInput",
+          "input[placeholder=\"Search name, sku, item #\"]",
+          "input[type=\"search\"]",
+          "input.search-input"
+        ],
+        "search_button_selectors": [
+          "//button[contains(@class, 'search-bar__button')]",
+          "//button[normalize-space()=\"Search\"]",
+          "//button[contains(@class, 'search')]",
+          "//button[contains(@class, 'search-button')]"
+        ],
+        "product_card_selectors": [
+          "div.productlist",
+          "div.product-card",
+          "div.search-result-item"
+        ],
+        "product_link_selector": "a.link",
+        "product_title_selectors": ["div.name.longName", "h3.name.longName"],
+        "product_sku_selectors": ["span.sku-text", "span.vendor-value"],
+        "product_price_selectors": ["span.formatted-price", "div.price-wrapper"],
+        "product_quantity_selectors": ["span.inventory-available"],
+        "no_results_selectors": [
+          "div.message-alert.info.p-3.message-no-item-alert",
+          "div.message-no-item-alert",
+          "div.message-alert"
+        ],
+        "max_results_per_query": 10,
+        "wait_timeout": 10,
+        "page_load_timeout": 30
+      },
+      "output_config": {
+        "output_file": "truckpro_evaluation_results.json",
+        "detailed_output_file": "truckpro_detailed_analysis.json"
+      }
+    },
+    "tundrafmp": {
+      "site_name": "TundraFMP",
+      "target_url": "https://www.tundrafmp.com/",
+      "search_tasks": [
+        {"query": "gasket"},
+        {"query": "refrigerator parts"},
+        {"query": "commercial kitchen"},
+        {"query": "1187010"},
+        {"query": "southbend"},
+        {"query": "hobart mixer"},
+        {"query": "fryer parts"},
+        {"query": "oven door"},
+        {"query": "thermostat"},
+        {"query": "heating element"}
+      ],
+      "inventory_test_cases": [
+        {"query": "1187010", "search_type": "part_number"},
+        {"query": "gasket", "search_type": "english_word"},
+        {"query": "southbend gasket", "search_type": "multiple_terms"}
+      ],
+      "scraping_config": {
+        "search_input_selectors": [
+          "#search-input",
+          "input[name=\"search\"]",
+          "input[type=\"search\"]",
+          "input.search-field"
+        ],
+        "search_button_selectors": [
+          "//button[@type=\"submit\"]",
+          "//button[contains(@class, 'search-btn')]",
+          "//input[@type=\"submit\"]",
+          "//button[contains(text(), 'Search')]"
+        ],
+        "product_card_selectors": [
+          "div.product-item",
+          "div.product-card",
+          "article.product"
+        ],
+        "product_link_selector": "a.product-link",
+        "product_title_selectors": ["h3.product-title", "h2.product-name"],
+        "product_sku_selectors": ["span.sku", "span.part-number"],
+        "product_price_selectors": ["span.price", "div.product-price"],
+        "product_quantity_selectors": ["span.stock-qty", "div.availability"],
+        "no_results_selectors": [
+          "div.no-results",
+          "p.no-products-found",
+          "div.empty-results"
+        ],
+        "max_results_per_query": 15,
+        "wait_timeout": 15,
+        "page_load_timeout": 45
+      },
+      "output_config": {
+        "output_file": "tundrafmp_evaluation_results.json",
+        "detailed_output_file": "tundrafmp_detailed_analysis.json"
+      }
+    },
+    "autozone": {
+      "site_name": "AutoZone",
+      "target_url": "https://www.autozone.com/",
+      "search_tasks": [
+        {"query": "brake pads"},
+        {"query": "oil filter"},
+        {"query": "air filter"},
+        {"query": "spark plugs"},
+        {"query": "battery"},
+        {"query": "alternator"},
+        {"query": "starter"},
+        {"query": "radiator"},
+        {"query": "transmission fluid"},
+        {"query": "brake fluid"}
+      ],
+      "inventory_test_cases": [
+        {"query": "AC Delco", "search_type": "multiple_terms"},
+        {"query": "brake pad", "search_type": "english_word"},
+        {"query": "honda civic brake pad", "search_type": "multiple_terms"}
+      ],
+      "scraping_config": {
+        "search_input_selectors": [
+          "#search-field",
+          "input[name=\"searchTerm\"]",
+          "input[placeholder*=\"Search\"]",
+          "input.search-input"
+        ],
+        "search_button_selectors": [
+          "//button[@aria-label=\"Search\"]",
+          "//button[contains(@class, 'search-submit')]",
+          "//input[@value=\"Search\"]"
+        ],
+        "product_card_selectors": [
+          "div[data-testid=\"product-card\"]",
+          "div.product-tile",
+          "article.product-item"
+        ],
+        "product_link_selector": "a[data-testid=\"product-link\"]",
+        "product_title_selectors": ["h3[data-testid=\"product-name\"]", "span.product-title"],
+        "product_sku_selectors": ["span[data-testid=\"part-number\"]", "span.sku"],
+        "product_price_selectors": ["span[data-testid=\"price\"]", "div.price"],
+        "product_quantity_selectors": ["span[data-testid=\"availability\"]", "div.stock-status"],
+        "no_results_selectors": [
+          "div[data-testid=\"no-results\"]",
+          "div.no-products",
+          "p.empty-state"
+        ],
+        "max_results_per_query": 12,
+        "wait_timeout": 8,
+        "page_load_timeout": 25
+      },
+      "output_config": {
+        "output_file": "autozone_evaluation_results.json",
+        "detailed_output_file": "autozone_detailed_analysis.json"
+      }
+    }
+  },
+  "llm_config": {
+    "ollama_api_endpoint": "http://localhost:11434/api/generate",
+    "default_model": "gemma3",
+    "timeout": 120,
+    "max_retries": 3
+  },
+  "evaluation_config": {
+    "enable_inventory_ranking": true,
+    "enable_detailed_analysis": true,
+    "inventory_weight_factor": 0.3,
+    "apply_post_ranking": true,
+    "low_stock_threshold": 5
+  },
+  "chrome_config": {
+    "chrome_driver_path": null,
+    "headless": true,
+    "window_size": {
+      "width": 1280,
+      "height": 720
+    },
+    "implicit_wait": 3,
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  },
+  "deployment_config": {
+    "environment": "development",
+    "log_level": "INFO",
+    "enable_screenshots": false,
+    "delay_between_searches": 2,
+    "enable_metrics_collection": true
+  }
+}
