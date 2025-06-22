@@ -180,8 +180,8 @@
     "chrome_driver_path": null,
     "headless": true,
     "window_size": {
-      "width": 1280,
-      "height": 720
+      "width": 3840,
+      "height": 2160
     },
     "implicit_wait": 3,
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"

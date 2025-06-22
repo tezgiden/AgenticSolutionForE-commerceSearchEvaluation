@@ -21,6 +21,105 @@
                     {
                         "relevance_tier": "Low",
                         "original_order": [
+                            2,
+                            3,
+                            4,
+                            5,
+                            6,
+                            7,
+                            8,
+                            9
+                        ],
+                        "new_order": [
+                            5,
+                            9,
+                            8,
+                            7,
+                            3,
+                            4,
+                            2,
+                            6
+                        ],
+                        "reasoning": "Inventory-based reordering within Low relevance tier"
+                    }
+                ],
+                "inventory_summary": {
+                    "total_items": 20,
+                    "in_stock_items": 7,
+                    "out_of_stock_items": 13,
+                    "stock_availability_ratio": 0.35
+                },
+                "recommendations": [
+                    "Consider highlighting 13 out-of-stock items differently in search results",
+                    "Inventory-based ranking is actively improving result relevance"
+                ]
+            },
+            "business_summary": {
+                "relevancy_assessment": "Search for '4707Q' on TruckPro returned 20 results with poor relevancy (2 high, 2 medium, 16 low relevance). Inventory availability is concerning with 7 items in stock, 13 out of stock.",
+                "product_movement_recommendations": [
+                    "Restock 13 out-of-stock items or consider removing them from search results to improve customer experience",
+                    "Improve search algorithm or product tagging on TruckPro to surface more relevant results higher in rankings",
+                    "Continue using inventory-aware ranking as it's successfully prioritizing available products"
+                ],
+                "key_insights": [
+                    "Products needing attention: SDNS-4707Q, SDNS-4707Q",
+                    "Search relevancy on TruckPro is below optimal - consider improving product metadata or search algorithm",
+                    "Low inventory availability may be impacting sales conversion"
+                ],
+                "action_items": [
+                    "PRIORITY: More items out of stock than in stock - review inventory management"
+                ]
+            },
+            "evaluation_metadata": {
+                "model_used": "gemma3",
+                "inventory_aware_ranking_applied": true,
+                "ranking_summary": "Manually extracted due to JSON parsing issues"
+            }
+        },
+        {
+            "query": "4707Q",
+            "search_type": "part_number",
+            "inventory_analysis": {
+                "inventory_changes_detected": true,
+                "ranking_changes": [
+                    {
+                        "relevance_tier": "Medium",
+                        "original_order": [
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            1
+                        ],
+                        "new_order": [
+                            1,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0
+                        ],
+                        "reasoning": "Inventory-based reordering within Medium relevance tier"
+                    },
+                    {
+                        "relevance_tier": "Low",
+                        "original_order": [
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
                             0,
                             2,
                             3,
@@ -40,6 +139,13 @@
                             4,
                             2,
                             6,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
                             0
                         ],
                         "reasoning": "Inventory-based reordering within Low relevance tier"
@@ -57,216 +163,14 @@
                 ]
             },
             "business_summary": {
-                "relevancy_assessment": "Search for '4707Q' on TruckPro returned 28 results with poor relevancy (2 high, 3 medium, 23 low relevance). Inventory availability is concerning with 7 items in stock, 21 out of stock.",
+                "relevancy_assessment": "Search for '4707Q' on TruckPro returned 28 results with poor relevancy (2 high, 10 medium, 16 low relevance). Inventory availability is concerning with 7 items in stock, 21 out of stock.",
                 "product_movement_recommendations": [
                     "Restock 21 out-of-stock items or consider removing them from search results to improve customer experience",
                     "Improve search algorithm or product tagging on TruckPro to surface more relevant results higher in rankings",
                     "Continue using inventory-aware ranking as it's successfully prioritizing available products"
                 ],
                 "key_insights": [
-                    "Products needing attention: SDNS-4707Q, CJBK4707QPAR20P",
-                    "Search relevancy on TruckPro is below optimal - consider improving product metadata or search algorithm",
-                    "Low inventory availability may be impacting sales conversion"
-                ],
-                "action_items": [
-                    "PRIORITY: More items out of stock than in stock - review inventory management"
-                ]
-            },
-            "evaluation_metadata": {
-                "model_used": "gemma3",
-                "inventory_aware_ranking_applied": true,
-                "ranking_summary": "Manually extracted due to JSON parsing issues"
-            }
-        },
-        {
-            "query": "ABCD",
-            "search_type": "part_number",
-            "inventory_analysis": {
-                "inventory_changes_detected": true,
-                "ranking_changes": [
-                    {
-                        "relevance_tier": "Low",
-                        "original_order": [
-                            1,
-                            2,
-                            3,
-                            4,
-                            5,
-                            6,
-                            7
-                        ],
-                        "new_order": [
-                            4,
-                            6,
-                            2,
-                            3,
-                            5,
-                            7,
-                            1
-                        ],
-                        "reasoning": "Inventory-based reordering within Low relevance tier"
-                    }
-                ],
-                "inventory_summary": {
-                    "total_items": 16,
-                    "in_stock_items": 8,
-                    "out_of_stock_items": 8,
-                    "stock_availability_ratio": 0.5
-                },
-                "recommendations": [
-                    "Consider highlighting 8 out-of-stock items differently in search results",
-                    "Inventory-based ranking is actively improving result relevance"
-                ]
-            },
-            "business_summary": {
-                "relevancy_assessment": "Search for 'ABCD' on TruckPro returned 16 results with poor relevancy (2 high, 0 medium, 14 low relevance). Inventory availability is concerning with 3 items in stock, 8 out of stock.",
-                "product_movement_recommendations": [
-                    "Restock 8 out-of-stock items or consider removing them from search results to improve customer experience",
-                    "Improve search algorithm or product tagging on TruckPro to surface more relevant results higher in rankings",
-                    "Continue using inventory-aware ranking as it's successfully prioritizing available products"
-                ],
-                "key_insights": [
-                    "Top performing products: 108664ABCD",
-                    "Products needing attention: ABLABCDOR4501S",
-                    "Search relevancy on TruckPro is below optimal - consider improving product metadata or search algorithm",
-                    "Low inventory availability may be impacting sales conversion"
-                ],
-                "action_items": [
-                    "PRIORITY: More items out of stock than in stock - review inventory management"
-                ]
-            },
-            "evaluation_metadata": {
-                "model_used": "gemma3",
-                "inventory_aware_ranking_applied": true,
-                "ranking_summary": "Manually extracted due to JSON parsing issues"
-            }
-        },
-        {
-            "query": "brake pad",
-            "search_type": "english_word",
-            "inventory_analysis": {
-                "inventory_changes_detected": true,
-                "ranking_changes": [
-                    {
-                        "relevance_tier": "High",
-                        "original_order": [
-                            0,
-                            0,
-                            0,
-                            1,
-                            2,
-                            3,
-                            4,
-                            5,
-                            6,
-                            7,
-                            7
-                        ],
-                        "new_order": [
-                            7,
-                            7,
-                            0,
-                            1,
-                            2,
-                            3,
-                            4,
-                            5,
-                            6,
-                            0,
-                            0
-                        ],
-                        "reasoning": "Inventory-based reordering within High relevance tier"
-                    }
-                ],
-                "inventory_summary": {
-                    "total_items": 20,
-                    "in_stock_items": 3,
-                    "out_of_stock_items": 17,
-                    "stock_availability_ratio": 0.15
-                },
-                "recommendations": [
-                    "Consider highlighting 17 out-of-stock items differently in search results",
-                    "Inventory-based ranking is actively improving result relevance"
-                ]
-            },
-            "business_summary": {
-                "relevancy_assessment": "Search for 'brake pad' on TruckPro returned 20 results with excellent relevancy (14 high, 2 medium, 4 low relevance). Inventory availability is concerning with 3 items in stock, 17 out of stock.",
-                "product_movement_recommendations": [
-                    "Restock 17 out-of-stock items or consider removing them from search results to improve customer experience",
-                    "Continue using inventory-aware ranking as it's successfully prioritizing available products"
-                ],
-                "key_insights": [
-                    "Top performing products: AFD2526, AFD2526",
-                    "Products needing attention: MDMPBD1708CV",
-                    "Low inventory availability may be impacting sales conversion"
-                ],
-                "action_items": [
-                    "PRIORITY: More items out of stock than in stock - review inventory management"
-                ]
-            },
-            "evaluation_metadata": {
-                "model_used": "gemma3",
-                "inventory_aware_ranking_applied": true,
-                "ranking_summary": "Manually extracted due to JSON parsing issues"
-            }
-        },
-        {
-            "query": "toyota brake pad",
-            "search_type": "multiple_terms",
-            "inventory_analysis": {
-                "inventory_changes_detected": true,
-                "ranking_changes": [
-                    {
-                        "relevance_tier": "Medium",
-                        "original_order": [
-                            1,
-                            2,
-                            7,
-                            8
-                        ],
-                        "new_order": [
-                            1,
-                            2,
-                            8,
-                            7
-                        ],
-                        "reasoning": "Inventory-based reordering within Medium relevance tier"
-                    },
-                    {
-                        "relevance_tier": "Low",
-                        "original_order": [
-                            3,
-                            4,
-                            6
-                        ],
-                        "new_order": [
-                            4,
-                            6,
-                            3
-                        ],
-                        "reasoning": "Inventory-based reordering within Low relevance tier"
-                    }
-                ],
-                "inventory_summary": {
-                    "total_items": 18,
-                    "in_stock_items": 9,
-                    "out_of_stock_items": 9,
-                    "stock_availability_ratio": 0.5
-                },
-                "recommendations": [
-                    "Consider highlighting 9 out-of-stock items differently in search results",
-                    "Inventory-based ranking is actively improving result relevance"
-                ]
-            },
-            "business_summary": {
-                "relevancy_assessment": "Search for 'toyota brake pad' on TruckPro returned 18 results with moderate relevancy (4 high, 8 medium, 6 low relevance). Inventory availability is concerning with 5 items in stock, 9 out of stock.",
-                "product_movement_recommendations": [
-                    "Restock 9 out-of-stock items or consider removing them from search results to improve customer experience",
-                    "Improve search algorithm or product tagging on TruckPro to surface more relevant results higher in rankings",
-                    "Continue using inventory-aware ranking as it's successfully prioritizing available products"
-                ],
-                "key_insights": [
-                    "Top performing products: K129276, 04945 35120",
+                    "Products needing attention: SDNS-4707Q, SDNS-4707Q",
                     "Search relevancy on TruckPro is below optimal - consider improving product metadata or search algorithm",
                     "Low inventory availability may be impacting sales conversion"
                 ],
@@ -282,5 +186,5 @@
         }
     ],
     "site_name": "TruckPro",
-    "generation_timestamp": "2025-06-21 16:57:23"
+    "generation_timestamp": "2025-06-22 16:35:09"
 }

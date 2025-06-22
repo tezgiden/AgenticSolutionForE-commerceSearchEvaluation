@@ -1,5 +1,8 @@
 # Configurable Web Scraping Module (Python + Selenium)
 
+import os
+import sys
+import argparse
 import json
 import time
 from selenium import webdriver
@@ -528,16 +531,16 @@ def extract_product_data_enhanced(card_element, card_index: int, scraping_config
         total_quantity = 0
         for quantity_selector in scraping_config.product_quantity_selectors:
             try:
-                quantity_element = card_element.find_element(By.CSS_SELECTOR, quantity_selector)
-                print(f"[DEBUG] Extracted   from quantity_element: {quantity_element}")
-                print(f"[DEBUG] Extracted   from quantity_selector: {quantity_selector}")
-                extracted_quantity = extract_quantity_from_html(quantity_element)
-                
-                if extracted_quantity is not None :
-                    total_quantity += extracted_quantity
-                    print(f"Found quantity with selector '{quantity_selector}': {extracted_quantity}")
-                    # break
-                    
+                # Use find_elements to get all matching spans
+                quantity_elements = card_element.find_elements(By.CSS_SELECTOR, quantity_selector)
+                print(f"[DEBUG] Found {len(quantity_elements)} elements with selector '{quantity_selector}'")
+                for idx, quantity_element in enumerate(quantity_elements):
+                    print(f"[DEBUG] [{idx}] quantity_element: {quantity_element}")
+                    extracted_quantity = extract_quantity_from_html(quantity_element)
+                    print(f"[DEBUG] [{idx}] extracted_quantity: {extracted_quantity}")
+                    if extracted_quantity is not None:
+                        total_quantity += extracted_quantity
+                        print(f"[DEBUG] Added quantity from element {idx}: {extracted_quantity}")
             except NoSuchElementException:
                 continue
 
@@ -551,7 +554,7 @@ def extract_product_data_enhanced(card_element, card_index: int, scraping_config
     return product_data
 
 def extract_quantity_from_html(quantity_element):
-    """Extract quantity from complex HTML structures."""
+    """Extract quantity from a Selenium WebElement with debug."""
     try:
         print(f"[DEBUG] Received quantity_element: {quantity_element} (type: {type(quantity_element)})")
         if quantity_element:
@@ -573,37 +576,17 @@ def extract_quantity_from_html(quantity_element):
             except Exception as e:
                 print(f"[DEBUG] Could not get value attribute: {e}")
 
-                
-            try:
-                print(f"[DEBUG] quantity_element dir: {dir(quantity_element)}")
-            except Exception as e:
-                print(f"[DEBUG] Could not get DIR: {e}")
-
-            # If it's a string-like object
-            if hasattr(quantity_element, 'text'):
-                quantity_text = quantity_element.text
-                quantity_text = quantity_text.strip()
-                print(f"[DEBUG] Extracted .text from quantity_element: {quantity_text}")
-            else:
-                quantity_text = str(quantity_element)
-                print(f"[DEBUG] Converted quantity_element to string: {quantity_text}")
-            
+            # Extract and clean text
+            quantity_text = quantity_element.text.strip()
             print(f"[DEBUG] Stripped quantity_text: '{quantity_text}'")
-            if quantity_text.isdigit():
-                print(f"[DEBUG] quantity_text is digit: {quantity_text}")
-                return int(quantity_text)
-            else:
-                # Show each character and its type for debugging
-                for idx, char in enumerate(quantity_text):
-                    print(f"[DEBUG] Char {idx}: '{char}' (ord: {ord(char)})")
-                # Remove non-digit characters and convert
-                digits = ''.join(filter(str.isdigit, quantity_text))
-                print(f"[DEBUG] Extracted digits from quantity_text: '{digits}'")
-                return int(digits) if digits else None
+            digits = ''.join(filter(str.isdigit, quantity_text))
+            print(f"[DEBUG] Extracted digits from quantity_text: '{digits}'")
+            return int(digits) if digits else None
         print("[DEBUG] quantity_element is None or empty")
         return None
     except Exception as e:
         print(f"Warning: Error extracting quantity: {e}")
+        return None
     
 def find_element_in_parent(parent_element, selectors):
     """Try multiple selectors to find an element within a parent element."""
@@ -795,7 +778,10 @@ def scrape_site_with_config(driver, search_term: str, site_config: SiteConfig, d
                 return results
                 
             print("Search results page loaded")
-            
+            # take_screenshots = config.deployment_config.enable_screenshots
+            # if take_screenshots:
+            take_screenshot(driver, "05_after_searchReulstLoaded", "After Search Results are loaded")
+
         except Exception as e:
             print(f"Error waiting for results: {e}")
             return results
@@ -1165,6 +1151,22 @@ def setup_driver():
     )
     
     return setup_driver_with_config(default_chrome_config)
+
+
+def take_screenshot(driver, filename: str, description: str = ""):
+    """Take a screenshot for debugging"""
+    try:
+        screenshot_dir = "debug_screenshots"
+        os.makedirs(screenshot_dir, exist_ok=True)
+        
+        filepath = os.path.join(screenshot_dir, f"{filename}.png")
+        driver.save_screenshot(filepath)
+        print(f"📸 Screenshot saved: {filepath} ({description})")
+        return filepath
+    except Exception as e:
+        print(f"Failed to take screenshot: {e}")
+        return None
+
 
 def scrape_tundra(driver, search_term: str) -> List[Dict[str, Any]]:
     """Backward compatibility function for existing code"""
