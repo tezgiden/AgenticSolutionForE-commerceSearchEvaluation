@@ -193,7 +193,10 @@ def extract_price_from_complex_html(price_element):
             
             if price_parts:
                 # Join dollar and cents parts
-                return ''.join(price_parts[:2])  # Usually $XX and .YY
+                #return ''.join(price_parts[:2])  # Usually $XX and .YY
+                dollars = price_parts[0].replace("$", "")
+                cents = price_parts[1]
+                return f"{dollars}.{cents}"
         
         # Method 2: Simple text extraction
         return price_element.text.strip()
@@ -201,14 +204,407 @@ def extract_price_from_complex_html(price_element):
     except Exception:
         return price_element.text.strip()
 
-def extract_quantity_from_html(quantity_element):
-    """Extract quantity from inventory HTML."""
+def handle_modal_popups(driver) -> None:
+    """Handle common modal popups that might interfere with scraping"""
+    modal_selectors = [
+        # Newsletter modals
+        "div.modal.show",
+        "div.modal-wrapper.show", 
+        "div[role='dialog'][aria-modal='true']",
+        ".newsletter-modal.show",
+        ".popup-modal.show",
+        
+        # Cookie banners
+        "#cookie-banner",
+        ".cookie-consent",
+        ".gdpr-banner",
+        
+        # General overlay modals
+        ".overlay.show",
+        ".modal-overlay.show"
+    ]
+    
+    close_button_selectors = [
+        # Common close button patterns
+        "button.close",
+        "button[aria-label='Close']",
+        "button[data-dismiss='modal']",
+        ".modal-close",
+        ".close-button",
+        "[data-close-modal]",
+        "button.btn-close",
+        
+        # X button patterns
+        "button:contains('×')",
+        "span.close",
+        ".fa-times",
+        ".fa-close"
+    ]
+    
     try:
-        # Get the numeric value from inventory-available span
-        return quantity_element.text.strip()
-    except Exception:
-        return "N/A"
+        # First, try to find and close any visible modals
+        for modal_selector in modal_selectors:
+            try:
+                modals = driver.find_elements(By.CSS_SELECTOR, modal_selector)
+                for modal in modals:
+                    if modal.is_displayed():
+                        print(f"Found visible modal: {modal_selector}")
+                        
+                        # Try to find close button within the modal
+                        for close_selector in close_button_selectors:
+                            try:
+                                if close_selector.startswith("button:contains"):
+                                    # Handle jQuery-style selector manually
+                                    close_buttons = modal.find_elements(By.TAG_NAME, "button")
+                                    for btn in close_buttons:
+                                        if "×" in btn.text or "X" in btn.text:
+                                            btn.click()
+                                            print(f"Closed modal using X button")
+                                            time.sleep(1)
+                                            return
+                                else:
+                                    close_button = modal.find_element(By.CSS_SELECTOR, close_selector)
+                                    if close_button.is_displayed():
+                                        close_button.click()
+                                        print(f"Closed modal using: {close_selector}")
+                                        time.sleep(1)
+                                        return
+                            except NoSuchElementException:
+                                continue
+                        
+                        # If no close button found, try clicking outside the modal
+                        try:
+                            driver.execute_script("arguments[0].style.display = 'none';", modal)
+                            print("Hid modal using JavaScript")
+                            time.sleep(1)
+                            return
+                        except:
+                            pass
+                            
+            except NoSuchElementException:
+                continue
+                
+        # Try pressing Escape key as fallback
+        try:
+            from selenium.webdriver.common.keys import Keys
+            driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.ESCAPE)
+            print("Attempted to close modals with Escape key")
+            time.sleep(1)
+        except:
+            pass
+            
+    except Exception as e:
+        print(f"Error handling modals: {e}")
 
+def wait_for_page_load(driver, timeout: int = 10) -> None:
+    """Wait for page to fully load and handle any loading states"""
+    try:
+        # Wait for basic page load
+        WebDriverWait(driver, timeout).until(
+            lambda driver: driver.execute_script("return document.readyState") == "complete"
+        )
+        
+        # Wait for any loading indicators to disappear
+        loading_selectors = [
+            ".loading",
+            ".spinner", 
+            ".loader",
+            "[data-loading='true']",
+            ".loading-overlay"
+        ]
+        
+        for selector in loading_selectors:
+            try:
+                WebDriverWait(driver, 3).until(
+                    EC.invisibility_of_element_located((By.CSS_SELECTOR, selector))
+                )
+            except TimeoutException:
+                continue
+                
+    except Exception as e:
+        print(f"Warning: Page load wait issue: {e}")
+
+def debug_product_structure(driver, card_element, card_index: int) -> None:
+    """Debug function to understand product card structure"""
+    try:
+        print(f"\n=== DEBUGGING PRODUCT CARD {card_index} ===")
+        
+        # Get outer HTML for inspection
+        outer_html = card_element.get_attribute("outerHTML")
+        print(f"Card HTML (first 300 chars): {outer_html[:300]}...")
+        
+        # Find all links in the card
+        links = card_element.find_elements(By.TAG_NAME, "a")
+        print(f"Found {len(links)} links in card:")
+        for i, link in enumerate(links):
+            href = link.get_attribute("href")
+            text = link.text.strip()
+            classes = link.get_attribute("class")
+            print(f"  Link {i}: href='{href}', text='{text[:50]}', classes='{classes}'")
+        
+        # Find all text elements
+        all_text_elements = card_element.find_elements(By.XPATH, ".//*[text()]")
+        print(f"Found {len(all_text_elements)} text elements:")
+        for i, elem in enumerate(all_text_elements[:5]):  # Limit to first 5
+            tag = elem.tag_name
+            text = elem.text.strip()
+            classes = elem.get_attribute("class")
+            if text:
+                print(f"  Element {i}: <{tag}> '{text[:30]}' classes='{classes}'")
+        
+        print(f"=== END DEBUG CARD {card_index} ===\n")
+        
+    except Exception as e:
+        print(f"Debug error for card {card_index}: {e}")
+
+def extract_product_data_enhanced(card_element, card_index: int, scraping_config: ScrapingConfig, debug: bool = False) -> Dict[str, str]:
+    """Enhanced product data extraction with better error handling and debugging"""
+    
+    product_data = {
+        "title": "N/A",
+        "part_number": "N/A", 
+        "url": "N/A",
+        "price": "N/A",
+        "quantity": "N/A",
+        "description": "N/A"
+    }
+    
+    if debug:
+        debug_product_structure(None, card_element, card_index)
+    
+    # Enhanced title and URL extraction
+    try:
+        # Method 1: Try configured selectors first
+        title_found = False
+        url_found = False
+        
+        # Try to find title using multiple approaches
+        for title_selector in scraping_config.product_title_selectors:
+            try:
+                # Try direct selector on card
+                title_element = card_element.find_element(By.CSS_SELECTOR, title_selector)
+                if title_element.text.strip():
+                    product_data["title"] = title_element.text.strip()
+                    title_found = True
+                    print(f"Found title with selector '{title_selector}': {product_data['title'][:50]}...")
+                    break
+            except NoSuchElementException:
+                continue
+        
+        # Try to find URL using configured link selector
+        try:
+            link_element = card_element.find_element(By.CSS_SELECTOR, scraping_config.product_link_selector)
+            href = link_element.get_attribute("href")
+            if href:
+                product_data["url"] = href
+                url_found = True
+                print(f"Found URL with selector '{scraping_config.product_link_selector}': {href}")
+                
+                # If title not found yet, try to get it from the link
+                if not title_found and link_element.text.strip():
+                    product_data["title"] = link_element.text.strip()
+                    title_found = True
+                    print(f"Got title from link text: {product_data['title'][:50]}...")
+                    
+        except NoSuchElementException:
+            pass
+        
+        # Fallback methods if configured selectors don't work
+        if not title_found or not url_found:
+            print(f"Fallback: searching for any links in card {card_index}")
+            
+            # Find all links and try to identify the main product link
+            all_links = card_element.find_elements(By.TAG_NAME, "a")
+            
+            for link in all_links:
+                href = link.get_attribute("href")
+                link_text = link.text.strip()
+                
+                # Skip empty links or non-product links
+                if not href or any(skip in href.lower() for skip in ['mailto:', 'tel:', 'javascript:', '#']):
+                    continue
+                
+                # Priority for links that look like product links
+                if any(indicator in href.lower() for indicator in ['/product/', '/item/', '/p/', '/details/']):
+                    if not url_found:
+                        product_data["url"] = href
+                        url_found = True
+                        print(f"Found product URL (fallback): {href}")
+                    
+                    if not title_found and link_text:
+                        product_data["title"] = link_text
+                        title_found = True
+                        print(f"Found title (fallback): {link_text[:50]}...")
+                    
+                    if title_found and url_found:
+                        break
+            
+            # Last resort: use the first meaningful link
+            if not title_found or not url_found:
+                for link in all_links:
+                    href = link.get_attribute("href")
+                    link_text = link.text.strip()
+                    
+                    if href and link_text and len(link_text) > 5:  # Meaningful text
+                        if not url_found:
+                            product_data["url"] = href
+                            url_found = True
+                        if not title_found:
+                            product_data["title"] = link_text
+                            title_found = True
+                        break
+        
+    except Exception as e:
+        print(f"Error extracting title/URL for product {card_index}: {e}")
+    
+    # Enhanced SKU/Part Number extraction
+    try:
+        sku_found = False
+        for sku_selector in scraping_config.product_sku_selectors:
+            try:
+                sku_element = card_element.find_element(By.CSS_SELECTOR, sku_selector)
+                extracted_sku = extract_sku_from_complex_html(sku_element)
+                
+                if extracted_sku and extracted_sku.strip():
+                    # Clean up the SKU text
+                    if "Vendor Part #:" in extracted_sku:
+                        product_data["part_number"] = extracted_sku.split("Vendor Part #:")[-1].strip()
+                    elif "SKU:" in extracted_sku:
+                        product_data["part_number"] = extracted_sku.split("SKU:")[-1].strip()
+                    elif "Part #:" in extracted_sku:
+                        product_data["part_number"] = extracted_sku.split("Part #:")[-1].strip()
+                    else:
+                        product_data["part_number"] = extracted_sku
+                    
+                    sku_found = True
+                    print(f"Found SKU with selector '{sku_selector}': {product_data['part_number']}")
+                    break
+                    
+            except NoSuchElementException:
+                continue
+        
+        # Fallback: look for common SKU patterns in any text
+        if not sku_found:
+            all_text = card_element.text
+            import re
+            # Look for patterns like "SKU: ABC123", "Part #: ABC123", etc.
+            sku_patterns = [
+                r'SKU:?\s*([A-Za-z0-9\-]+)',
+                r'Part\s*#:?\s*([A-Za-z0-9\-]+)',
+                r'Item\s*#:?\s*([A-Za-z0-9\-]+)',
+                r'Model:?\s*([A-Za-z0-9\-]+)'
+            ]
+            
+            for pattern in sku_patterns:
+                match = re.search(pattern, all_text, re.IGNORECASE)
+                if match:
+                    product_data["part_number"] = match.group(1)
+                    print(f"Found SKU with pattern '{pattern}': {product_data['part_number']}")
+                    break
+                    
+    except Exception as e:
+        print(f"Error extracting SKU for product {card_index}: {e}")
+    
+    # Enhanced Price extraction
+    try:
+        for price_selector in scraping_config.product_price_selectors:
+            try:
+                price_element = card_element.find_element(By.CSS_SELECTOR, price_selector)
+                extracted_price = extract_price_from_complex_html(price_element)
+                
+                if extracted_price and extracted_price.strip():
+                    product_data["price"] = extracted_price
+                    print(f"Found price with selector '{price_selector}': {extracted_price}")
+                    break
+                    
+            except NoSuchElementException:
+                continue
+                
+    except Exception as e:
+        print(f"Error extracting price for product {card_index}: {e}")
+    
+    # Enhanced Quantity extraction
+    try:
+        total_quantity = 0
+        for quantity_selector in scraping_config.product_quantity_selectors:
+            try:
+                quantity_element = card_element.find_element(By.CSS_SELECTOR, quantity_selector)
+                print(f"[DEBUG] Extracted   from quantity_element: {quantity_element}")
+                print(f"[DEBUG] Extracted   from quantity_selector: {quantity_selector}")
+                extracted_quantity = extract_quantity_from_html(quantity_element)
+                
+                if extracted_quantity is not None :
+                    total_quantity += extracted_quantity
+                    print(f"Found quantity with selector '{quantity_selector}': {extracted_quantity}")
+                    # break
+                    
+            except NoSuchElementException:
+                continue
+
+        if total_quantity > 0:
+            product_data["quantity"] = total_quantity
+            print(f"Total quantity found: {total_quantity}")
+
+    except Exception as e:
+        print(f"Error extracting quantity for product {card_index}: {e}")
+    
+    return product_data
+
+def extract_quantity_from_html(quantity_element):
+    """Extract quantity from complex HTML structures."""
+    try:
+        print(f"[DEBUG] Received quantity_element: {quantity_element} (type: {type(quantity_element)})")
+        if quantity_element:
+            try:
+                outer_html = quantity_element.get_attribute('outerHTML')
+                print(f"[DEBUG] quantity_element outerHTML: {outer_html}")
+            except Exception as e:
+                print(f"[DEBUG] Could not get outerHTML: {e}")
+
+            try:
+                text = quantity_element.text
+                print(f"[DEBUG] quantity_element .text: '{text}'")
+            except Exception as e:
+                print(f"[DEBUG] Could not get .text: {e}")
+
+            try:
+                value = quantity_element.get_attribute('value')
+                print(f"[DEBUG] quantity_element value attribute: '{value}'")
+            except Exception as e:
+                print(f"[DEBUG] Could not get value attribute: {e}")
+
+                
+            try:
+                print(f"[DEBUG] quantity_element dir: {dir(quantity_element)}")
+            except Exception as e:
+                print(f"[DEBUG] Could not get DIR: {e}")
+
+            # If it's a string-like object
+            if hasattr(quantity_element, 'text'):
+                quantity_text = quantity_element.text
+                quantity_text = quantity_text.strip()
+                print(f"[DEBUG] Extracted .text from quantity_element: {quantity_text}")
+            else:
+                quantity_text = str(quantity_element)
+                print(f"[DEBUG] Converted quantity_element to string: {quantity_text}")
+            
+            print(f"[DEBUG] Stripped quantity_text: '{quantity_text}'")
+            if quantity_text.isdigit():
+                print(f"[DEBUG] quantity_text is digit: {quantity_text}")
+                return int(quantity_text)
+            else:
+                # Show each character and its type for debugging
+                for idx, char in enumerate(quantity_text):
+                    print(f"[DEBUG] Char {idx}: '{char}' (ord: {ord(char)})")
+                # Remove non-digit characters and convert
+                digits = ''.join(filter(str.isdigit, quantity_text))
+                print(f"[DEBUG] Extracted digits from quantity_text: '{digits}'")
+                return int(digits) if digits else None
+        print("[DEBUG] quantity_element is None or empty")
+        return None
+    except Exception as e:
+        print(f"Warning: Error extracting quantity: {e}")
+    
 def find_element_in_parent(parent_element, selectors):
     """Try multiple selectors to find an element within a parent element."""
     if isinstance(selectors, str):
@@ -246,7 +642,248 @@ def find_element_with_multiple_selectors(driver, selectors, by=By.CSS_SELECTOR, 
             continue
     return None
 
-def scrape_site_with_config(driver, search_term: str, site_config: SiteConfig) -> List[Dict[str, Any]]:
+def scrape_site_with_config(driver, search_term: str, site_config: SiteConfig, debug_mode: bool = False) -> List[Dict[str, Any]]:
+    """Performs a search and scrapes results using site configuration."""
+    results = []
+    scraping_config = site_config.scraping_config
+    
+    try:
+        # Set page load timeout
+        driver.set_page_load_timeout(scraping_config.page_load_timeout)
+        
+        # Navigate to the page with error handling
+        try:
+            print(f"Navigating to {site_config.target_url}")
+            driver.get(site_config.target_url)
+            print(f"Successfully navigated to {site_config.target_url}")
+            
+            # Wait for page to load completely
+            wait_for_page_load(driver, 10)
+            
+            print(f"Page title: {driver.title}")
+            
+            # Handle modal popups that might interfere
+            print("Checking for modal popups...")
+            handle_modal_popups(driver)
+            
+            # Additional wait for dynamic content
+            time.sleep(3)
+            
+        except Exception as e:
+            print(f"Error loading page: {e}")
+            return results
+
+        # Wait for search input and enter search term with better error handling
+        try:
+            print("Looking for search input...")
+            search_input = find_element_with_multiple_selectors(
+                driver, 
+                scraping_config.search_input_selectors, 
+                wait_for_interactable=True, 
+                timeout=scraping_config.wait_timeout
+            )
+            if not search_input:
+                print("Error: Could not find search input with any selector")
+                # Debug: print available input elements
+                inputs = driver.find_elements(By.TAG_NAME, "input")
+                print(f"Found {len(inputs)} input elements on page")
+                for i, inp in enumerate(inputs[:5]):  # Show first 5
+                    input_type = inp.get_attribute('type')
+                    placeholder = inp.get_attribute('placeholder')
+                    name = inp.get_attribute('name')
+                    id_attr = inp.get_attribute('id')
+                    print(f"Input {i}: type='{input_type}', placeholder='{placeholder}', name='{name}', id='{id_attr}'")
+                return results
+                
+            search_input.clear()
+            search_input.send_keys(search_term)
+            print(f"Entered search term: {search_term}")
+            
+        except Exception as e:
+            print(f"Error entering search term: {e}")
+            return results
+
+        # Find and click search button with enhanced error handling
+        try:
+            print("Looking for search button...")
+            
+            # Handle any modals that might have appeared
+            handle_modal_popups(driver)
+            
+            search_button = find_element_with_multiple_selectors(
+                driver, 
+                scraping_config.search_button_selectors, 
+                by=By.XPATH, 
+                timeout=5
+            )
+            
+            if search_button:
+                try:
+                    # Check if button is clickable
+                    WebDriverWait(driver, 5).until(EC.element_to_be_clickable(search_button))
+                    search_button.click()
+                    print("Clicked search button successfully")
+                except Exception as click_error:
+                    print(f"Error clicking search button: {click_error}")
+                    # Try JavaScript click as fallback
+                    try:
+                        driver.execute_script("arguments[0].click();", search_button)
+                        print("Used JavaScript click as fallback")
+                    except Exception as js_error:
+                        print(f"JavaScript click also failed: {js_error}")
+                        # Try Enter key as final fallback
+                        from selenium.webdriver.common.keys import Keys
+                        search_input.send_keys(Keys.RETURN)
+                        print("Used Enter key as final fallback")
+            else:
+                print("Search button not found, using Enter key...")
+                from selenium.webdriver.common.keys import Keys
+                search_input.send_keys(Keys.RETURN)
+                print("Used Enter key")
+                
+        except Exception as e:
+            print(f"Error with search button: {e}")
+            # Final fallback: try pressing Enter
+            try:
+                from selenium.webdriver.common.keys import Keys
+                search_input.send_keys(Keys.RETURN)
+                print("Used Enter key as final fallback")
+            except Exception as fallback_error:
+                print(f"All search methods failed: {fallback_error}")
+                return results
+
+        # Wait for results with better error handling
+        try:
+            print("Waiting for search results...")
+            
+            # Wait a bit for the search to process
+            time.sleep(3)
+            
+            # Handle any new modals that might appear
+            handle_modal_popups(driver)
+            
+            # Wait for page to finish loading
+            wait_for_page_load(driver, 10)
+            # Wait a bit more for the quantity to process
+            time.sleep(8)
+           
+            # First check if we got a "no results" message
+            if check_for_no_results_with_config(driver, search_term, scraping_config):
+                print(f"Search for '{search_term}' returned no results.")
+                return results  # Return empty results list
+            
+            # Look for product cards
+            product_card = find_element_with_multiple_selectors(
+                driver, 
+                scraping_config.product_card_selectors, 
+                timeout=10
+            )
+            
+            if not product_card:
+                print("Error: Could not find product cards with any selector")
+                print(f"Current URL: {driver.current_url}")
+                
+                # Debug: Show what's on the page
+                page_source_sample = driver.page_source[:1000]
+                print(f"Page source sample: {page_source_sample}")
+                
+                # Double-check for no results message after waiting
+                if check_for_no_results_with_config(driver, search_term, scraping_config):
+                    print(f"Confirmed: Search for '{search_term}' returned no results.")
+                    return results
+                    
+                return results
+                
+            print("Search results page loaded")
+            
+        except Exception as e:
+            print(f"Error waiting for results: {e}")
+            return results
+
+        # Find all product cards with enhanced detection
+        print(f"Looking for product cards with selectors: {scraping_config.product_card_selectors}")
+        
+        product_cards = []
+        for selector in scraping_config.product_card_selectors:
+            try:
+                cards = driver.find_elements(By.CSS_SELECTOR, selector)
+                if cards:
+                    product_cards = cards
+                    print(f"Found {len(cards)} product cards using selector: {selector}")
+                    break
+            except Exception as e:
+                print(f"Error with selector '{selector}': {e}")
+                continue
+        
+        if len(product_cards) == 0:
+            if check_for_no_results_with_config(driver, search_term, scraping_config):
+                print(f"Final confirmation: No results found for '{search_term}'")
+                return results
+            else:
+                print("No product cards found, but no 'no results' message detected either.")
+                
+                # Debug: try to find any elements that might be product cards
+                potential_selectors = [
+                    "div[class*='product']",
+                    "div[class*='item']", 
+                    "div[class*='result']",
+                    "article",
+                    "li[class*='product']",
+                    ".product",
+                    ".item",
+                    ".result"
+                ]
+                
+                for debug_selector in potential_selectors:
+                    try:
+                        debug_cards = driver.find_elements(By.CSS_SELECTOR, debug_selector)
+                        if debug_cards:
+                            print(f"DEBUG: Found {len(debug_cards)} elements with selector '{debug_selector}'")
+                    except:
+                        continue
+                        
+                return results
+
+        # Extract data from each card using enhanced method
+        print(f"Starting to extract data from {len(product_cards)} product cards...")
+        
+        for i, card in enumerate(product_cards):
+            if i >= scraping_config.max_results_per_query:
+                print(f"Reached max results limit ({scraping_config.max_results_per_query})")
+                break
+            
+            print(f"Scraping product {i+1} of {min(len(product_cards), scraping_config.max_results_per_query)}")
+            
+            try:
+                product_data = extract_product_data_enhanced(
+                    card, i+1, scraping_config, debug=debug_mode
+                )
+                
+                # Only add if we found meaningful data
+                if (product_data["title"] != "N/A" and product_data["title"]) or \
+                   (product_data["url"] != "N/A" and product_data["url"]):
+                    results.append(product_data)
+                    title_preview = product_data['title'][:50] + '...' if len(product_data['title']) > 50 else product_data['title']
+                    print(f"-- Scraped Product {i+1}: Title: {title_preview}")
+                else:
+                    print(f"-- Skipped Product {i+1}: No meaningful data found")
+                    if debug_mode:
+                        print(f"   Data: {product_data}")
+                        
+            except Exception as e:
+                print(f"Error extracting data from product {i+1}: {e}")
+                continue
+
+        print(f"Successfully extracted data from {len(results)} products")
+
+    except TimeoutException:
+        print(f"Error: Timed out waiting for elements during search for {search_term}")
+    except Exception as e:
+        print(f"An unexpected error occurred during scraping for {search_term}: {e}")
+        import traceback
+        traceback.print_exc()
+
+    return results
     """Performs a search and scrapes results using site configuration."""
     results = []
     scraping_config = site_config.scraping_config

@@ -264,8 +264,6 @@ def apply_inventory_aware_ranking(evaluations: List[Dict[str, Any]],
 # --- Ollama API Interaction with Configuration Support ---
 def query_ollama(prompt: str, model: str = DEFAULT_MODEL, api_endpoint: str = OLLAMA_API_ENDPOINT, 
                 timeout: int = TIMEOUT, max_retries: int = MAX_RETRIES) -> Dict[str, Any]:
-def query_ollama(prompt: str, model: str = DEFAULT_MODEL, api_endpoint: str = OLLAMA_API_ENDPOINT, 
-                timeout: int = TIMEOUT, max_retries: int = MAX_RETRIES) -> Dict[str, Any]:
     """
     Sends a prompt to the Ollama API and returns the response.
     
@@ -310,6 +308,7 @@ def query_ollama(prompt: str, model: str = DEFAULT_MODEL, api_endpoint: str = OL
 def parse_enhanced_llm_response(response: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
     Parses the enhanced LLM response including inventory considerations.
+    Enhanced to handle various JSON formatting issues.
     """
     if "error" in response:
         print(f"Error in LLM response: {response['error']}")
@@ -318,28 +317,91 @@ def parse_enhanced_llm_response(response: Dict[str, Any]) -> Optional[Dict[str, 
     try:
         generated_text = response.get("response", "")
         
-        # Find JSON block in the response (more flexible pattern)
-        json_match = re.search(r'({[\s\S]*?"evaluations"[\s\S]*?})', generated_text, re.DOTALL)
+        # Remove markdown code blocks if present
+        if "```json" in generated_text:
+            # Extract content between ```json and ```
+            start_marker = "```json"
+            end_marker = "```"
+            start_idx = generated_text.find(start_marker)
+            if start_idx != -1:
+                start_idx += len(start_marker)
+                end_idx = generated_text.find(end_marker, start_idx)
+                if end_idx != -1:
+                    generated_text = generated_text[start_idx:end_idx].strip()
         
-        if json_match:
-            json_str = json_match.group(1)
-            # Clean up potential formatting issues
-            json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)  # Remove trailing commas
+        # Try to find JSON block in the response (more flexible pattern)
+        json_patterns = [
+            r'({[\s\S]*?"evaluations"[\s\S]*?})',  # Original pattern
+            r'(\{[^{}]*?"evaluations"[^{}]*?\})',   # Simpler pattern
+            r'({.*?"evaluations".*?})',             # Even simpler
+        ]
+        
+        json_str = None
+        for pattern in json_patterns:
+            json_match = re.search(pattern, generated_text, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(1)
+                break
+        
+        if not json_str:
+            # Fallback: try to extract JSON-like content manually
+            lines = generated_text.split('\n')
+            json_lines = []
+            in_json = False
+            brace_count = 0
             
-            evaluations = json.loads(json_str)
-            return evaluations
-        else:
-            print("Could not find JSON in LLM response")
-            print(f"Raw response: {generated_text[:500]}...")  # Truncate for readability
-            return None
+            for line in lines:
+                if '{' in line and not in_json:
+                    in_json = True
+                    brace_count += line.count('{') - line.count('}')
+                    json_lines.append(line)
+                elif in_json:
+                    brace_count += line.count('{') - line.count('}')
+                    json_lines.append(line)
+                    if brace_count <= 0:
+                        break
             
-    except json.JSONDecodeError as e:
-        print(f"JSON parsing error: {e}")
-        print(f"Raw response: {response.get('response', '')[:500]}...")
-        return None
+            if json_lines:
+                json_str = '\n'.join(json_lines)
+        
+        if json_str:
+            # Clean up common JSON formatting issues
+            json_str = json_str.strip()
+            
+            # Fix common trailing comma issues
+            json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)
+            
+            # Fix unescaped quotes in strings
+            json_str = re.sub(r'(?<!\\)"(?=[^,}\]]*[,}\]])', r'\\"', json_str)
+            
+            # Try to parse
+            try:
+                evaluations = json.loads(json_str)
+                return evaluations
+            except json.JSONDecodeError as e:
+                print(f"JSON parsing failed, attempting to fix: {e}")
+                
+                # More aggressive cleaning
+                json_str = json_str.replace("'", '"')  # Replace single quotes
+                json_str = re.sub(r'([{,]\s*)(\w+):', r'\1"\2":', json_str)  # Quote unquoted keys
+                json_str = re.sub(r':\s*([^",\[\]{}]+)([,}])', r': "\1"\2', json_str)  # Quote unquoted values
+                
+                try:
+                    evaluations = json.loads(json_str)
+                    return evaluations
+                except json.JSONDecodeError as e2:
+                    print(f"Still failed to parse JSON after cleanup: {e2}")
+                    
+                    # Last resort: try to extract evaluations manually
+                    return extract_evaluations_manually(generated_text)
+        
+        print("Could not find valid JSON in LLM response")
+        print(f"Raw response (first 500 chars): {generated_text[:500]}...")
+        return extract_evaluations_manually(generated_text)
+        
     except Exception as e:
         print(f"Unexpected error parsing LLM response: {e}")
-        return None
+        return extract_evaluations_manually(response.get("response", ""))
 
 # --- Main Enhanced Evaluation Function ---
 def evaluate_search_results_with_inventory(query: str, results: List[Dict[str, str]], 
@@ -539,3 +601,77 @@ if __name__ == "__main__":
     except requests.exceptions.RequestException as e:
         print(f"Error connecting to Ollama: {e}")
         print("Is Ollama running? Start it with 'ollama serve' or install from https://ollama.ai/")
+
+
+
+def extract_evaluations_manually(text: str) -> Optional[Dict[str, Any]]:
+    """
+    Manually extract evaluation information from text when JSON parsing fails.
+    """
+    try:
+        evaluations = []
+        
+        # Look for result patterns
+        result_patterns = [
+            r'result_index["\']?\s*:\s*(\d+)',
+            r'Result\s*(\d+)',
+            r'result\s*(\d+)',
+        ]
+        
+        relevance_patterns = [
+            r'relevance["\']?\s*:\s*["\']?(High|Medium|Low)["\']?',
+            r'(High|Medium|Low)\s*relevance',
+            r'relevance.*?(High|Medium|Low)',
+        ]
+        
+        justification_patterns = [
+            r'justification["\']?\s*:\s*["\']([^"\']+)["\']',
+            r'justification.*?[:]\s*([^,}\]]+)',
+        ]
+        
+        # Extract all matches
+        result_indices = []
+        for pattern in result_patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE)
+            if matches:
+                result_indices.extend([int(m) for m in matches])
+        
+        relevances = []
+        for pattern in relevance_patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE)
+            if matches:
+                relevances.extend(matches)
+        
+        justifications = []
+        for pattern in justification_patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE | re.DOTALL)
+            if matches:
+                justifications.extend([m.strip() for m in matches])
+        
+        # Create evaluations from extracted data
+        max_results = max(len(result_indices), len(relevances), len(justifications))
+        
+        for i in range(max_results):
+            evaluation = {
+                "result_index": result_indices[i] if i < len(result_indices) else i,
+                "relevance": relevances[i] if i < len(relevances) else "Medium",
+                "justification": justifications[i] if i < len(justifications) else f"Manual extraction for result {i}",
+                "inventory_status": "Unknown",
+                "inventory_quantity": "N/A",
+                "inventory_impact": "N/A"
+            }
+            evaluations.append(evaluation)
+        
+        if evaluations:
+            print(f"Manually extracted {len(evaluations)} evaluations")
+            return {
+                "evaluations": evaluations,
+                "ranking_summary": "Manually extracted due to JSON parsing issues"
+            }
+        else:
+            print("Manual extraction also failed")
+            return None
+            
+    except Exception as e:
+        print(f"Manual extraction error: {e}")
+        return None# Enhanced LLM Evaluation Module with Inventory-Aware Ranking - COMPLETE VERSION

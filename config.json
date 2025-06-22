@@ -4,52 +4,37 @@
       "site_name": "TruckPro",
       "target_url": "https://www.truckpro.com/",
       "search_tasks": [
-        {"query": "4707Q"},
-        {"query": "BK608"},
-        {"query": "armada 4707q"},
-        {"query": "513188"},
-        {"query": "VS17573T"},
-        {"query": "gunite 1140"},
-        {"query": "truck-lite"},
-        {"query": "trucklite"},
-        {"query": "air drier"},
-        {"query": "air dryer"},
-        {"query": "TQ16010"},
-        {"query": "Armada Battery"},
-        {"query": "K2924"},
-        {"query": "Brake Drum"},
-        {"query": "brake chamber"},
-        {"query": "Wheel nut"},
-        {"query": "air spring"}
+        {"query": "4707Q"}        
       ],
       "inventory_test_cases": [
-        {"query": "ABCD", "search_type": "part_number"},
-        {"query": "brake pad", "search_type": "english_word"},
-        {"query": "toyota brake pad", "search_type": "multiple_terms"}
+        {"query": "4707Q"}
       ],
       "scraping_config": {
         "search_input_selectors": [
           "#searchInput",
-          "input[placeholder=\"Search name, sku, item #\"]",
-          "input[type=\"search\"]",
-          "input.search-input"
+          "input[name='search']",
+          "input[placeholder*='Search']",
+          "input[type='search']",
+          ".search-input"
         ],
         "search_button_selectors": [
           "//button[contains(@class, 'search-bar__button')]",
-          "//button[normalize-space()=\"Search\"]",
-          "//button[contains(@class, 'search')]",
-          "//button[contains(@class, 'search-button')]"
+          "//button[@id='search-bar__button']",
+          "//button[contains(text(), 'Search')]",
+          "//input[@type='submit']"
         ],
         "product_card_selectors": [
           "div.productlist",
-          "div.product-card",
-          "div.search-result-item"
+          "div[class*='product']",
+          "div[class*='item']",
+          ".product-card",
+          "article.product"
         ],
         "product_link_selector": "a.link",
         "product_title_selectors": ["div.name.longName", "h3.name.longName"],
         "product_sku_selectors": ["span.sku-text", "span.vendor-value"],
         "product_price_selectors": ["span.formatted-price", "div.price-wrapper"],
-        "product_quantity_selectors": ["span.inventory-available"],
+        "product_quantity_selectors": ["span.inventory-available.bold", "inventory-available bold"],
         "no_results_selectors": [
           "div.message-alert.info.p-3.message-no-item-alert",
           "div.message-no-item-alert",
@@ -181,7 +166,7 @@
   "llm_config": {
     "ollama_api_endpoint": "http://localhost:11434/api/generate",
     "default_model": "gemma3",
-    "timeout": 120,
+    "timeout": 240,
     "max_retries": 3
   },
   "evaluation_config": {
@@ -204,7 +189,7 @@
   "deployment_config": {
     "environment": "development",
     "log_level": "INFO",
-    "enable_screenshots": false,
+    "enable_screenshots": true,
     "delay_between_searches": 2,
     "enable_metrics_collection": true
   }

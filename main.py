@@ -357,9 +357,10 @@ def run_configurable_agentic_search(config: AppConfig) -> None:
             print(f"Processing Query {task_idx + 1}/{len(all_search_tasks)}: '{query}'")
             print(f"{'='*70}")
 
-            # 1. Scrape Search Results
+            # 1. Scrape Search Results with debug mode
             print("--- Step 1: Scraping website ---")
-            scraped_results = scrape_site_with_config(driver, query, config.site_config)
+            debug_mode = config.deployment_config.environment == "development"
+            scraped_results = scrape_site_with_config(driver, query, config.site_config, debug_mode=debug_mode)
             if not scraped_results:
                 print(f"No results found or error during scraping for '{query}'. Skipping evaluation.")
                 all_final_results.append({

@@ -1,0 +1,1445 @@
+{
+    "search_results": [
+        {
+            "query": "4707Q",
+            "status": "success",
+            "search_type": "part_number",
+            "scraped_results": [
+                {
+                    "title": "Stemco SDNS-4707Q",
+                    "part_number": "SDNS-4707Q",
+                    "url": "https://www.truckpro.com/p/stemco-sdns-4707q-NS-4707Q/sdns-4707q?source=TP",
+                    "price": "N/A",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                },
+                {
+                    "title": "CCC CONVERSION BRAKE KIT 4707Q",
+                    "part_number": "CJBK4707QPAR20P",
+                    "url": "https://www.truckpro.com/p/armada-brake-shoe-kit-reman-4707QPAR20P/bk4707qpar20p?source=TP?superseding=CJBK4707QPAR20P",
+                    "price": "N/A",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                },
+                {
+                    "title": "Abex Brake Shoe Reman",
+                    "part_number": "LS4707QPEN",
+                    "url": "N/A",
+                    "price": "39.49",
+                    "quantity": 8,
+                    "description": "N/A"
+                },
+                {
+                    "title": "Advantage HD Brake Shoe Kit Reman",
+                    "part_number": "BK4707QPV23",
+                    "url": "N/A",
+                    "price": "47.39",
+                    "quantity": 17,
+                    "description": "N/A"
+                },
+                {
+                    "title": "Advantage HD Brake Shoe Kit Reman",
+                    "part_number": "BK4707QPV20",
+                    "url": "N/A",
+                    "price": "44.59",
+                    "quantity": 16,
+                    "description": "N/A"
+                },
+                {
+                    "title": "Abex Brake Shoe Kit New",
+                    "part_number": "NK4707QPEL",
+                    "url": "N/A",
+                    "price": "93.99",
+                    "quantity": 1099,
+                    "description": "N/A"
+                },
+                {
+                    "title": "Bendix KIT",
+                    "part_number": "EXKT4707QBB230",
+                    "url": "N/A",
+                    "price": "N/A",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                },
+                {
+                    "title": "Bendix Brake Shoe Kit New",
+                    "part_number": "BWBNK4707QBB230",
+                    "url": "N/A",
+                    "price": "94.99",
+                    "quantity": 18,
+                    "description": "N/A"
+                },
+                {
+                    "title": "Abex STOP BOX",
+                    "part_number": "AXEL4707QSB",
+                    "url": "N/A",
+                    "price": "193.99",
+                    "quantity": 29,
+                    "description": "N/A"
+                },
+                {
+                    "title": "Abex Brake Shoe Kit New",
+                    "part_number": "NK4707QPEX",
+                    "url": "N/A",
+                    "price": "157.99",
+                    "quantity": 332,
+                    "description": "N/A"
+                }
+            ],
+            "evaluation": [
+                {
+                    "result_index": 0,
+                    "relevance": "High",
+                    "justification": "The title and part number (SDNS-4707Q) perfectly match the input query",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 18,
+                    "relevance": "High",
+                    "justification": "\"The part number (AXEL4707QSB) includes '4707Q'",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 1,
+                    "relevance": "Medium",
+                    "justification": "The title contains",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 0,
+                    "relevance": "Medium",
+                    "justification": "\"The title and part number (SDNS-4707Q) perfectly match the input query '4707Q'. This is the closest and most direct match.\"",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 19,
+                    "relevance": "Medium",
+                    "justification": "\"The part number (NK4707QPEX) includes '4707Q'",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 5,
+                    "relevance": "Low",
+                    "justification": "The part number (NK4707QPEL) includes",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 1099,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 9,
+                    "relevance": "Low",
+                    "justification": "The part number (NK4707QPEX) includes",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 332,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 8,
+                    "relevance": "Low",
+                    "justification": "The part number (AXEL4707QSB) includes",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 29,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 7,
+                    "relevance": "Low",
+                    "justification": "The part number (BWBNK4707QBB230) includes",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 18,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 3,
+                    "relevance": "Low",
+                    "justification": "The part number (BK4707QPV23) contains",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 17,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 4,
+                    "relevance": "Low",
+                    "justification": "The part number (BK4707QPV20) includes",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 16,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 2,
+                    "relevance": "Low",
+                    "justification": "The part number includes",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 8,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 6,
+                    "relevance": "Low",
+                    "justification": "The part number (EXKT4707QBB230) includes",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 0,
+                    "relevance": "Low",
+                    "justification": "\"The title contains '4707Q'",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 12,
+                    "relevance": "Low",
+                    "justification": "\"The part number includes '4707Q'",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 13,
+                    "relevance": "Low",
+                    "justification": "\"The part number (BK4707QPV23) contains '4707Q'",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 14,
+                    "relevance": "Low",
+                    "justification": "\"The part number (BK4707QPV20) includes '4707Q'",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 15,
+                    "relevance": "Low",
+                    "justification": "\"The part number (NK4707QPEL) includes '4707Q'",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 16,
+                    "relevance": "Low",
+                    "justification": "\"The part number (EXKT4707QBB230) includes '4707Q'",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 17,
+                    "relevance": "Low",
+                    "justification": "\"The part number (BWBNK4707QBB230) includes '4707Q'",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 20,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 20",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 21,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 21",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 22,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 22",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 23,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 23",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 24,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 24",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 25,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 25",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 26,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 26",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 27,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 27",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                }
+            ],
+            "inventory_analysis": {
+                "inventory_changes_detected": true,
+                "ranking_changes": [
+                    {
+                        "relevance_tier": "Medium",
+                        "original_order": [
+                            0,
+                            1
+                        ],
+                        "new_order": [
+                            1,
+                            0
+                        ],
+                        "reasoning": "Inventory-based reordering within Medium relevance tier"
+                    },
+                    {
+                        "relevance_tier": "Low",
+                        "original_order": [
+                            0,
+                            2,
+                            3,
+                            4,
+                            5,
+                            6,
+                            7,
+                            8,
+                            9
+                        ],
+                        "new_order": [
+                            5,
+                            9,
+                            8,
+                            7,
+                            3,
+                            4,
+                            2,
+                            6,
+                            0
+                        ],
+                        "reasoning": "Inventory-based reordering within Low relevance tier"
+                    }
+                ],
+                "inventory_summary": {
+                    "total_items": 28,
+                    "in_stock_items": 7,
+                    "out_of_stock_items": 21,
+                    "stock_availability_ratio": 0.25
+                },
+                "recommendations": [
+                    "Consider highlighting 21 out-of-stock items differently in search results",
+                    "Inventory-based ranking is actively improving result relevance"
+                ]
+            },
+            "business_summary": {
+                "relevancy_assessment": "Search for '4707Q' on TruckPro returned 28 results with poor relevancy (2 high, 3 medium, 23 low relevance). Inventory availability is concerning with 7 items in stock, 21 out of stock.",
+                "product_movement_recommendations": [
+                    "Restock 21 out-of-stock items or consider removing them from search results to improve customer experience",
+                    "Improve search algorithm or product tagging on TruckPro to surface more relevant results higher in rankings",
+                    "Continue using inventory-aware ranking as it's successfully prioritizing available products"
+                ],
+                "key_insights": [
+                    "Products needing attention: SDNS-4707Q, CJBK4707QPAR20P",
+                    "Search relevancy on TruckPro is below optimal - consider improving product metadata or search algorithm",
+                    "Low inventory availability may be impacting sales conversion"
+                ],
+                "action_items": [
+                    "PRIORITY: More items out of stock than in stock - review inventory management"
+                ]
+            },
+            "timestamp": "2025-06-21 16:32:55"
+        },
+        {
+            "query": "ABCD",
+            "status": "success",
+            "search_type": "part_number",
+            "scraped_results": [
+                {
+                    "title": "SKYJACK LABEL, FRENCH OFF SLAB",
+                    "part_number": "108664ABCD",
+                    "url": "https://www.truckpro.com/p/skyjack-label-french-off-slab-108664ABCD/12896241?source=060916",
+                    "price": "6.07",
+                    "quantity": 81,
+                    "description": "N/A"
+                },
+                {
+                    "title": "FREIGHTLINER Clutch Slave Cylinder",
+                    "part_number": "ABLABCDOR5509",
+                    "url": "N/A",
+                    "price": "71.39",
+                    "quantity": 1,
+                    "description": "N/A"
+                },
+                {
+                    "title": "FREIGHTLINER Multi-Purpose Hardware",
+                    "part_number": "ABLABCDOR5502S",
+                    "url": "N/A",
+                    "price": "123.92",
+                    "quantity": 2,
+                    "description": "N/A"
+                },
+                {
+                    "title": "FREIGHTLINER Clutch Slave Cylinder",
+                    "part_number": "ABLABCDOR4503S",
+                    "url": "N/A",
+                    "price": "72.92",
+                    "quantity": 2,
+                    "description": "N/A"
+                },
+                {
+                    "title": "FREIGHTLINER CYLNDR 4 W/501 KEY",
+                    "part_number": "ABLABCDOR4501S",
+                    "url": "N/A",
+                    "price": "76.49",
+                    "quantity": 22,
+                    "description": "N/A"
+                },
+                {
+                    "title": "FREIGHTLINER Multi-Purpose Hardware",
+                    "part_number": "ABLABCDOR4502S",
+                    "url": "N/A",
+                    "price": "123.92",
+                    "quantity": 2,
+                    "description": "N/A"
+                },
+                {
+                    "title": "FREIGHTLINER Door Handle Hardware Kit",
+                    "part_number": "ABL/ABC-DOR-4000S",
+                    "url": "N/A",
+                    "price": "132.08",
+                    "quantity": 7,
+                    "description": "N/A"
+                },
+                {
+                    "title": "FREIGHTLINER Door Latch Assembly",
+                    "part_number": "ABLABCDORRXZNXXS",
+                    "url": "N/A",
+                    "price": "87.20",
+                    "quantity": 2,
+                    "description": "N/A"
+                }
+            ],
+            "evaluation": [
+                {
+                    "result_index": 0,
+                    "relevance": "High",
+                    "justification": "The result",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 81,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 15,
+                    "relevance": "High",
+                    "justification": "\"The result's 'Part Number' (ABLABCDORRXZNXXS) contains 'ABCD'",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 4,
+                    "relevance": "Low",
+                    "justification": "The result",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 22,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 6,
+                    "relevance": "Low",
+                    "justification": "The result",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 7,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 2,
+                    "relevance": "Low",
+                    "justification": "The result",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 2,
+                    "inventory_status_parsed": "Low Stock"
+                },
+                {
+                    "result_index": 3,
+                    "relevance": "Low",
+                    "justification": "The result",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 2,
+                    "inventory_status_parsed": "Low Stock"
+                },
+                {
+                    "result_index": 5,
+                    "relevance": "Low",
+                    "justification": "The result",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 2,
+                    "inventory_status_parsed": "Low Stock"
+                },
+                {
+                    "result_index": 7,
+                    "relevance": "Low",
+                    "justification": "The result",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 2,
+                    "inventory_status_parsed": "Low Stock"
+                },
+                {
+                    "result_index": 1,
+                    "relevance": "Low",
+                    "justification": "The part number",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 1,
+                    "inventory_status_parsed": "Low Stock"
+                },
+                {
+                    "result_index": 16,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 16",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 17,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 17",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 18,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 18",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 19,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 19",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 20,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 20",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 21,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 21",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 22,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 22",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                }
+            ],
+            "inventory_analysis": {
+                "inventory_changes_detected": true,
+                "ranking_changes": [
+                    {
+                        "relevance_tier": "Low",
+                        "original_order": [
+                            1,
+                            2,
+                            3,
+                            4,
+                            5,
+                            6,
+                            7
+                        ],
+                        "new_order": [
+                            4,
+                            6,
+                            2,
+                            3,
+                            5,
+                            7,
+                            1
+                        ],
+                        "reasoning": "Inventory-based reordering within Low relevance tier"
+                    }
+                ],
+                "inventory_summary": {
+                    "total_items": 16,
+                    "in_stock_items": 8,
+                    "out_of_stock_items": 8,
+                    "stock_availability_ratio": 0.5
+                },
+                "recommendations": [
+                    "Consider highlighting 8 out-of-stock items differently in search results",
+                    "Inventory-based ranking is actively improving result relevance"
+                ]
+            },
+            "business_summary": {
+                "relevancy_assessment": "Search for 'ABCD' on TruckPro returned 16 results with poor relevancy (2 high, 0 medium, 14 low relevance). Inventory availability is concerning with 3 items in stock, 8 out of stock.",
+                "product_movement_recommendations": [
+                    "Restock 8 out-of-stock items or consider removing them from search results to improve customer experience",
+                    "Improve search algorithm or product tagging on TruckPro to surface more relevant results higher in rankings",
+                    "Continue using inventory-aware ranking as it's successfully prioritizing available products"
+                ],
+                "key_insights": [
+                    "Top performing products: 108664ABCD",
+                    "Products needing attention: ABLABCDOR4501S",
+                    "Search relevancy on TruckPro is below optimal - consider improving product metadata or search algorithm",
+                    "Low inventory availability may be impacting sales conversion"
+                ],
+                "action_items": [
+                    "PRIORITY: More items out of stock than in stock - review inventory management"
+                ]
+            },
+            "timestamp": "2025-06-21 16:40:13"
+        },
+        {
+            "query": "brake pad",
+            "status": "success",
+            "search_type": "english_word",
+            "scraped_results": [
+                {
+                    "title": "Haldex AIR DISC PADS",
+                    "part_number": "MDMPBD1708CV",
+                    "url": "https://www.truckpro.com/p/haldex-air-disc-pads-MPBD1708CV/mdmpbd1708cv?source=TP",
+                    "price": "Sign In For Pricing.Sign In For Pricing",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                },
+                {
+                    "title": "Haldex AIR DISC PADS",
+                    "part_number": "MDMPBD1777XT",
+                    "url": "N/A",
+                    "price": "Sign In For Pricing.Sign In For Pricing",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                },
+                {
+                    "title": "Haldex Air Disc Pads",
+                    "part_number": "MDMPBD1708HD",
+                    "url": "N/A",
+                    "price": "Sign In For Pricing.Sign In For Pricing",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                },
+                {
+                    "title": "Haldex AIR DISC PADS",
+                    "part_number": "MDMPBD1708XT",
+                    "url": "N/A",
+                    "price": "Sign In For Pricing.Sign In For Pricing",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                },
+                {
+                    "title": "Haldex AIR DISC PADS",
+                    "part_number": "MDMPBD1777CV",
+                    "url": "N/A",
+                    "price": "Sign In For Pricing.Sign In For Pricing",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                },
+                {
+                    "title": "Haldex AIR DISC PADS",
+                    "part_number": "MDMPBD1690HD",
+                    "url": "N/A",
+                    "price": "Sign In For Pricing.Sign In For Pricing",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                },
+                {
+                    "title": "Haldex AIR DISC PADS",
+                    "part_number": "MDMPBD1690XT",
+                    "url": "N/A",
+                    "price": "Sign In For Pricing.Sign In For Pricing",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                },
+                {
+                    "title": "Armada Air Disc Pad Kit",
+                    "part_number": "AFD2526",
+                    "url": "N/A",
+                    "price": "Sign In For Pricing.Sign In For Pricing",
+                    "quantity": 40,
+                    "description": "N/A"
+                },
+                {
+                    "title": "Automann Air Disc Pad Ha",
+                    "part_number": "FX100.A1407.30",
+                    "url": "N/A",
+                    "price": "Sign In For Pricing.Sign In For Pricing",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                },
+                {
+                    "title": "Automann Air Disc Pad Ha",
+                    "part_number": "FX100.A1310.30",
+                    "url": "N/A",
+                    "price": "Sign In For Pricing.Sign In For Pricing",
+                    "quantity": "N/A",
+                    "description": "N/A"
+                }
+            ],
+            "evaluation": [
+                {
+                    "result_index": 7,
+                    "relevance": "High",
+                    "justification": "\"Similar to Result 0",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 40,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 7,
+                    "relevance": "High",
+                    "justification": "\"\u2018Haldex AIR DISC PADS\u2019  are once again a direct match to the search term \u2018brake pad\u2019.\"",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 40,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 0,
+                    "relevance": "High",
+                    "justification": "The product title",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 1,
+                    "relevance": "High",
+                    "justification": "Similar to Result 0, \u2018Haldex AIR DISC PADS\u2019 are directly relevant to \u2018brake pad\u2019.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 2,
+                    "relevance": "High",
+                    "justification": "\u2018Haldex AIR DISC PADS\u2019 again represent a direct match to the search query \u2018brake pad\u2019 due to their nature as brake pads.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 3,
+                    "relevance": "High",
+                    "justification": "\u2018Haldex AIR DISC PADS\u2019  are once again a direct match to the search term \u2018brake pad\u2019.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 4,
+                    "relevance": "High",
+                    "justification": "\u2018Haldex AIR DISC PADS\u2019 are a direct match to the search query \u2018brake pad\u2019.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 5,
+                    "relevance": "High",
+                    "justification": "\u2018Haldex AIR DISC PADS\u2019 are a direct match to the search query \u2018brake pad\u2019.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 6,
+                    "relevance": "High",
+                    "justification": "\u2018Haldex AIR DISC PADS\u2019 are a direct match to the search query \u2018brake pad\u2019.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 0,
+                    "relevance": "High",
+                    "justification": "\"The product title 'Haldex AIR DISC PADS' directly relates to 'brake pad'. It's a specific type of brake pad and the part number aligns with automotive braking components.\"",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 0,
+                    "relevance": "High",
+                    "justification": "\"\u2018Haldex AIR DISC PADS\u2019 again represent a direct match to the search query \u2018brake pad\u2019 due to their nature as brake pads.\"",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 14,
+                    "relevance": "High",
+                    "justification": "\"\u2018Haldex AIR DISC PADS\u2019 are a direct match to the search query \u2018brake pad\u2019.\"",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 15,
+                    "relevance": "High",
+                    "justification": "\"\u2018Haldex AIR DISC PADS\u2019 are a direct match to the search query \u2018brake pad\u2019.\"",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 16,
+                    "relevance": "High",
+                    "justification": "\"\u2018Haldex AIR DISC PADS\u2019 are a direct match to the search query \u2018brake pad\u2019.\"",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 7,
+                    "relevance": "Medium",
+                    "justification": "The product is described as \u2018Armada Air Disc Pad Kit\u2019 which contains \u2018brake pad\u2019 components. While not a direct match, it\u2019s a related accessory.  The available inventory quantity is a positive factor.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 40,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 17,
+                    "relevance": "Medium",
+                    "justification": "\"The product is described as \u2018Armada Air Disc Pad Kit\u2019 which contains \u2018brake pad\u2019 components. While not a direct match",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 8,
+                    "relevance": "Low",
+                    "justification": "\u2018Automann Air Disc Pad Ha\u2019 is a generic term and doesn",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 9,
+                    "relevance": "Low",
+                    "justification": "\u2018Automann Air Disc Pad Ha\u2019 is a generic term and doesn\u2019t specifically relate to \u2018brake pad\u2019. It\u2019s likely a brand/model of brake pads, but doesn\u2019t align with the search query.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 18,
+                    "relevance": "Low",
+                    "justification": "\"\u2018Automann Air Disc Pad Ha\u2019 is a generic term and doesn't specifically relate to 'brake pad'. It's likely a brand/model of brake pads",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 19,
+                    "relevance": "Low",
+                    "justification": "\"\u2018Automann Air Disc Pad Ha\u2019 is a generic term and doesn\u2019t specifically relate to \u2018brake pad\u2019. It\u2019s likely a brand/model of brake pads",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                }
+            ],
+            "inventory_analysis": {
+                "inventory_changes_detected": true,
+                "ranking_changes": [
+                    {
+                        "relevance_tier": "High",
+                        "original_order": [
+                            0,
+                            0,
+                            0,
+                            1,
+                            2,
+                            3,
+                            4,
+                            5,
+                            6,
+                            7,
+                            7
+                        ],
+                        "new_order": [
+                            7,
+                            7,
+                            0,
+                            1,
+                            2,
+                            3,
+                            4,
+                            5,
+                            6,
+                            0,
+                            0
+                        ],
+                        "reasoning": "Inventory-based reordering within High relevance tier"
+                    }
+                ],
+                "inventory_summary": {
+                    "total_items": 20,
+                    "in_stock_items": 3,
+                    "out_of_stock_items": 17,
+                    "stock_availability_ratio": 0.15
+                },
+                "recommendations": [
+                    "Consider highlighting 17 out-of-stock items differently in search results",
+                    "Inventory-based ranking is actively improving result relevance"
+                ]
+            },
+            "business_summary": {
+                "relevancy_assessment": "Search for 'brake pad' on TruckPro returned 20 results with excellent relevancy (14 high, 2 medium, 4 low relevance). Inventory availability is concerning with 3 items in stock, 17 out of stock.",
+                "product_movement_recommendations": [
+                    "Restock 17 out-of-stock items or consider removing them from search results to improve customer experience",
+                    "Continue using inventory-aware ranking as it's successfully prioritizing available products"
+                ],
+                "key_insights": [
+                    "Top performing products: AFD2526, AFD2526",
+                    "Products needing attention: MDMPBD1708CV",
+                    "Low inventory availability may be impacting sales conversion"
+                ],
+                "action_items": [
+                    "PRIORITY: More items out of stock than in stock - review inventory management"
+                ]
+            },
+            "timestamp": "2025-06-21 16:47:46"
+        },
+        {
+            "query": "toyota brake pad",
+            "status": "success",
+            "search_type": "multiple_terms",
+            "scraped_results": [
+                {
+                    "title": "BENDIX ADB22X Disc Brake Pad Kit - Extended L",
+                    "part_number": "K129276",
+                    "url": "https://www.truckpro.com/p/bendix-adb22x-disc-brake-pad-kit-extended-l-K129276/8522694?source=060916",
+                    "price": "224.90",
+                    "quantity": 16,
+                    "description": "N/A"
+                },
+                {
+                    "title": "WABCO Disc Brake Pad Set - MAXXUS 2.0, Air Di",
+                    "part_number": "640-421-920-2",
+                    "url": "N/A",
+                    "price": "324.86",
+                    "quantity": 6,
+                    "description": "N/A"
+                },
+                {
+                    "title": "BENDIX ST7 Air Disc Brake Pad Kit - Fits Bend",
+                    "part_number": "K218038",
+                    "url": "N/A",
+                    "price": "328.94",
+                    "quantity": 4,
+                    "description": "N/A"
+                },
+                {
+                    "title": "HALDEX Air Brake Spring Brake - Maxibreak HR-",
+                    "part_number": "N36000",
+                    "url": "N/A",
+                    "price": "1,145.14",
+                    "quantity": 18,
+                    "description": "N/A"
+                },
+                {
+                    "title": "WABCO Air Brake Dryer",
+                    "part_number": "4329012482",
+                    "url": "N/A",
+                    "price": "88.22",
+                    "quantity": 178,
+                    "description": "N/A"
+                },
+                {
+                    "title": "TOYOTA Disc Brake Pad Shim for TOYOTA for TOY",
+                    "part_number": "04945 35120",
+                    "url": "N/A",
+                    "price": "65.27",
+                    "quantity": 1,
+                    "description": "N/A"
+                },
+                {
+                    "title": "UNITED PACIFIC Wheel Cover - Set, 16\", Stainl",
+                    "part_number": "20102",
+                    "url": "N/A",
+                    "price": "271.31",
+                    "quantity": 34,
+                    "description": "N/A"
+                },
+                {
+                    "title": "TEXTAR Disc Brake Pad for TOYOTA",
+                    "part_number": "2440101",
+                    "url": "N/A",
+                    "price": "96.38",
+                    "quantity": 1,
+                    "description": "N/A"
+                },
+                {
+                    "title": "TEXTAR Disc Brake Pad for TOYOTA",
+                    "part_number": "2430701",
+                    "url": "N/A",
+                    "price": "203.99",
+                    "quantity": 3,
+                    "description": "N/A"
+                },
+                {
+                    "title": "WABCO Air Brake Drier Purge Tank",
+                    "part_number": "432-480-341-0",
+                    "url": "N/A",
+                    "price": "679.35",
+                    "quantity": 6,
+                    "description": "N/A"
+                }
+            ],
+            "evaluation": [
+                {
+                    "result_index": 0,
+                    "relevance": "High",
+                    "justification": "The title includes \u2018BENDIX\u2019 and \u2018Disc Brake Pad Kit\u2019, directly matching the query terms. It\u2019s a kit which fits within the broader",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 16,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 5,
+                    "relevance": "High",
+                    "justification": "The title specifically mentions \u2018TOYOTA Disc Brake Pad Shim\u2019 and includes the \u2018TOYOTA\u2019 brand. This is a direct match for the query.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 1,
+                    "inventory_status_parsed": "Low Stock"
+                },
+                {
+                    "result_index": 10,
+                    "relevance": "High",
+                    "justification": "\"The title mentions \u2018WABCO\u2019 and \u2018Disc Brake Pad Set\u2019",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 19,
+                    "relevance": "High",
+                    "justification": "Manual extraction for result 19",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 1,
+                    "relevance": "Medium",
+                    "justification": "The title mentions \u2018WABCO\u2019 and \u2018Disc Brake Pad Set\u2019, and explicitly states \u2018Air Di\u2019. While \u2018Air\u2019 is relevant, it",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 6,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 2,
+                    "relevance": "Medium",
+                    "justification": "The title includes",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 4,
+                    "inventory_status_parsed": "Low Stock"
+                },
+                {
+                    "result_index": 8,
+                    "relevance": "Medium",
+                    "justification": "The title contains \u2018TEXTAR Disc Brake Pad for TOYOTA\u2019, providing a brand match, and includes the \u2018TOYOTA\u2019 brand. This is a direct match for the query.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 3,
+                    "inventory_status_parsed": "Low Stock"
+                },
+                {
+                    "result_index": 7,
+                    "relevance": "Medium",
+                    "justification": "The title contains \u2018TEXTAR Disc Brake Pad for TOYOTA\u2019, providing a brand match, and includes the \u2018TOYOTA\u2019 brand. This is a direct match for the query.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 1,
+                    "inventory_status_parsed": "Low Stock"
+                },
+                {
+                    "result_index": 11,
+                    "relevance": "Medium",
+                    "justification": "\"The title includes 'BENDIX' and 'Air Disc Brake Pad Kit'",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 13,
+                    "relevance": "Medium",
+                    "justification": "\"The title contains \u2018WABCO Air Brake Dryer\u2019",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 22,
+                    "relevance": "Medium",
+                    "justification": "Manual extraction for result 22",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 24,
+                    "relevance": "Medium",
+                    "justification": "Manual extraction for result 24",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 4,
+                    "relevance": "Low",
+                    "justification": "The title contains \u2018WABCO Air Brake Dryer\u2019, which is completely unrelated to brake pads. It is just a component associated with the braking system but doesn\u2019t fulfill the core query of \u2018toyota brake pad\u2019.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 178,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 6,
+                    "relevance": "Low",
+                    "justification": "This result consists of a \u2018Wheel Cover - Set, 16\u201d, which is a completely unrelated product. There",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 34,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 3,
+                    "relevance": "Low",
+                    "justification": "This result contains \u2018Haldex\u2019 and \u2018Air Brake Spring Brake - Maxibreak HR-\u2019, which are related to braking systems but are significantly less specific than the query\u2019s core terms. \u2018Air\u2019 is present, but it\u2019s a very general term.",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 18,
+                    "inventory_status_parsed": "Available"
+                },
+                {
+                    "result_index": 15,
+                    "relevance": "Low",
+                    "justification": "\"This result consists of a \u2018Wheel Cover - Set",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 17,
+                    "relevance": "Low",
+                    "justification": "\"The title contains \u2018TEXTAR Disc Brake Pad for TOYOTA\u2019",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                },
+                {
+                    "result_index": 20,
+                    "relevance": "Low",
+                    "justification": "Manual extraction for result 20",
+                    "inventory_status": "Unknown",
+                    "inventory_quantity": "N/A",
+                    "inventory_impact": "N/A",
+                    "parsed_quantity": 0,
+                    "inventory_status_parsed": "Unknown"
+                }
+            ],
+            "inventory_analysis": {
+                "inventory_changes_detected": true,
+                "ranking_changes": [
+                    {
+                        "relevance_tier": "Medium",
+                        "original_order": [
+                            1,
+                            2,
+                            7,
+                            8
+                        ],
+                        "new_order": [
+                            1,
+                            2,
+                            8,
+                            7
+                        ],
+                        "reasoning": "Inventory-based reordering within Medium relevance tier"
+                    },
+                    {
+                        "relevance_tier": "Low",
+                        "original_order": [
+                            3,
+                            4,
+                            6
+                        ],
+                        "new_order": [
+                            4,
+                            6,
+                            3
+                        ],
+                        "reasoning": "Inventory-based reordering within Low relevance tier"
+                    }
+                ],
+                "inventory_summary": {
+                    "total_items": 18,
+                    "in_stock_items": 9,
+                    "out_of_stock_items": 9,
+                    "stock_availability_ratio": 0.5
+                },
+                "recommendations": [
+                    "Consider highlighting 9 out-of-stock items differently in search results",
+                    "Inventory-based ranking is actively improving result relevance"
+                ]
+            },
+            "business_summary": {
+                "relevancy_assessment": "Search for 'toyota brake pad' on TruckPro returned 18 results with moderate relevancy (4 high, 8 medium, 6 low relevance). Inventory availability is concerning with 5 items in stock, 9 out of stock.",
+                "product_movement_recommendations": [
+                    "Restock 9 out-of-stock items or consider removing them from search results to improve customer experience",
+                    "Improve search algorithm or product tagging on TruckPro to surface more relevant results higher in rankings",
+                    "Continue using inventory-aware ranking as it's successfully prioritizing available products"
+                ],
+                "key_insights": [
+                    "Top performing products: K129276, 04945 35120",
+                    "Search relevancy on TruckPro is below optimal - consider improving product metadata or search algorithm",
+                    "Low inventory availability may be impacting sales conversion"
+                ],
+                "action_items": [
+                    "PRIORITY: More items out of stock than in stock - review inventory management"
+                ]
+            },
+            "timestamp": "2025-06-21 16:57:19"
+        }
+    ],
+    "overall_summary": {
+        "site_name": "TruckPro",
+        "site_url": "https://www.truckpro.com/",
+        "total_queries": 4,
+        "successful_queries": 4,
+        "failed_queries": 0,
+        "average_relevancy_score": 1.7,
+        "inventory_performance": {
+            "in_stock_percentage": 32.9,
+            "out_of_stock_percentage": 67.1,
+            "total_products_analyzed": 82
+        },
+        "top_recommendations": [
+            "Improve search relevancy algorithms on TruckPro - average score below target",
+            "Address inventory issues on TruckPro - only 32.9% of products in stock"
+        ],
+        "critical_issues": [],
+        "configuration_summary": {
+            "inventory_ranking_enabled": true,
+            "model_used": "gemma3",
+            "max_results_per_query": 10
+        }
+    },
+    "configuration": {
+        "site_name": "TruckPro",
+        "site_url": "https://www.truckpro.com/",
+        "inventory_ranking_enabled": true,
+        "detailed_analysis_enabled": true,
+        "model_used": "gemma3",
+        "total_queries_processed": 4,
+        "generation_timestamp": "2025-06-21 16:57:23",
+        "environment": "development"
+    }
+}
