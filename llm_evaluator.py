@@ -316,7 +316,7 @@ def parse_enhanced_llm_response(response: Dict[str, Any]) -> Optional[Dict[str, 
     
     try:
         generated_text = response.get("response", "")
-        
+        print(f"Raw LLM response: {generated_text[:1500]}...")  # Print first 500 chars for debugging
         # Remove markdown code blocks if present
         if "```json" in generated_text:
             # Extract content between ```json and ```

@@ -32,7 +32,7 @@
         ],
         "product_link_selector": "a.link",
         "product_title_selectors": ["div.name.longName", "h3.name.longName"],
-        "product_sku_selectors": ["span.sku-text", "span.vendor-value"],
+        "product_sku_selectors": ["span.sku-text"],
         "product_price_selectors": ["span.formatted-price", "div.price-wrapper"],
         "product_quantity_selectors": ["span.inventory-available.bold", "inventory-available bold"],
         "no_results_selectors": [

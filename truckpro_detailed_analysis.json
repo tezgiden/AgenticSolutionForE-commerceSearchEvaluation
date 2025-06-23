@@ -9,35 +9,33 @@
                     {
                         "relevance_tier": "Medium",
                         "original_order": [
-                            0,
-                            1
+                            1,
+                            2,
+                            3,
+                            4,
+                            5
                         ],
                         "new_order": [
-                            1,
-                            0
+                            3,
+                            2,
+                            4,
+                            5,
+                            1
                         ],
                         "reasoning": "Inventory-based reordering within Medium relevance tier"
                     },
                     {
                         "relevance_tier": "Low",
                         "original_order": [
-                            2,
-                            3,
-                            4,
-                            5,
                             6,
                             7,
                             8,
                             9
                         ],
                         "new_order": [
-                            5,
                             9,
                             8,
                             7,
-                            3,
-                            4,
-                            2,
                             6
                         ],
                         "reasoning": "Inventory-based reordering within Low relevance tier"
@@ -55,14 +53,14 @@
                 ]
             },
             "business_summary": {
-                "relevancy_assessment": "Search for '4707Q' on TruckPro returned 20 results with poor relevancy (2 high, 2 medium, 16 low relevance). Inventory availability is concerning with 7 items in stock, 13 out of stock.",
+                "relevancy_assessment": "Search for '4707Q' on TruckPro returned 20 results with poor relevancy (2 high, 10 medium, 8 low relevance). Inventory availability is concerning with 7 items in stock, 13 out of stock.",
                 "product_movement_recommendations": [
                     "Restock 13 out-of-stock items or consider removing them from search results to improve customer experience",
                     "Improve search algorithm or product tagging on TruckPro to surface more relevant results higher in rankings",
                     "Continue using inventory-aware ranking as it's successfully prioritizing available products"
                 ],
                 "key_insights": [
-                    "Products needing attention: SDNS-4707Q, SDNS-4707Q",
+                    "Products needing attention: SDNS-4707Q",
                     "Search relevancy on TruckPro is below optimal - consider improving product metadata or search algorithm",
                     "Low inventory availability may be impacting sales conversion"
                 ],
@@ -85,45 +83,22 @@
                     {
                         "relevance_tier": "Medium",
                         "original_order": [
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            1
+                            1,
+                            2,
+                            3,
+                            4
                         ],
                         "new_order": [
-                            1,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
+                            3,
+                            2,
+                            4,
+                            1
                         ],
                         "reasoning": "Inventory-based reordering within Medium relevance tier"
                     },
                     {
                         "relevance_tier": "Low",
                         "original_order": [
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            2,
-                            3,
-                            4,
                             5,
                             6,
                             7,
@@ -135,42 +110,31 @@
                             9,
                             8,
                             7,
-                            3,
-                            4,
-                            2,
-                            6,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
+                            6
                         ],
                         "reasoning": "Inventory-based reordering within Low relevance tier"
                     }
                 ],
                 "inventory_summary": {
-                    "total_items": 28,
+                    "total_items": 20,
                     "in_stock_items": 7,
-                    "out_of_stock_items": 21,
-                    "stock_availability_ratio": 0.25
+                    "out_of_stock_items": 13,
+                    "stock_availability_ratio": 0.35
                 },
                 "recommendations": [
-                    "Consider highlighting 21 out-of-stock items differently in search results",
+                    "Consider highlighting 13 out-of-stock items differently in search results",
                     "Inventory-based ranking is actively improving result relevance"
                 ]
             },
             "business_summary": {
-                "relevancy_assessment": "Search for '4707Q' on TruckPro returned 28 results with poor relevancy (2 high, 10 medium, 16 low relevance). Inventory availability is concerning with 7 items in stock, 21 out of stock.",
+                "relevancy_assessment": "Search for '4707Q' on TruckPro returned 20 results with poor relevancy (2 high, 8 medium, 10 low relevance). Inventory availability is concerning with 7 items in stock, 13 out of stock.",
                 "product_movement_recommendations": [
-                    "Restock 21 out-of-stock items or consider removing them from search results to improve customer experience",
+                    "Restock 13 out-of-stock items or consider removing them from search results to improve customer experience",
                     "Improve search algorithm or product tagging on TruckPro to surface more relevant results higher in rankings",
                     "Continue using inventory-aware ranking as it's successfully prioritizing available products"
                 ],
                 "key_insights": [
-                    "Products needing attention: SDNS-4707Q, SDNS-4707Q",
+                    "Products needing attention: SDNS-4707Q",
                     "Search relevancy on TruckPro is below optimal - consider improving product metadata or search algorithm",
                     "Low inventory availability may be impacting sales conversion"
                 ],
@@ -186,5 +150,5 @@
         }
     ],
     "site_name": "TruckPro",
-    "generation_timestamp": "2025-06-22 16:35:09"
+    "generation_timestamp": "2025-06-22 17:48:32"
 }

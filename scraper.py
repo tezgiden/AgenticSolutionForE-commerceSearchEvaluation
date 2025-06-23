@@ -366,6 +366,7 @@ def extract_product_data_enhanced(card_element, card_index: int, scraping_config
     product_data = {
         "title": "N/A",
         "part_number": "N/A", 
+        "vendor_part_number": "N/A",
         "url": "N/A",
         "price": "N/A",
         "quantity": "N/A",
@@ -464,27 +465,29 @@ def extract_product_data_enhanced(card_element, card_index: int, scraping_config
     try:
         sku_found = False
         for sku_selector in scraping_config.product_sku_selectors:
+            # ...existing code...
             try:
-                sku_element = card_element.find_element(By.CSS_SELECTOR, sku_selector)
-                extracted_sku = extract_sku_from_complex_html(sku_element)
-                
-                if extracted_sku and extracted_sku.strip():
-                    # Clean up the SKU text
-                    if "Vendor Part #:" in extracted_sku:
-                        product_data["part_number"] = extracted_sku.split("Vendor Part #:")[-1].strip()
-                    elif "SKU:" in extracted_sku:
-                        product_data["part_number"] = extracted_sku.split("SKU:")[-1].strip()
-                    elif "Part #:" in extracted_sku:
-                        product_data["part_number"] = extracted_sku.split("Part #:")[-1].strip()
-                    else:
-                        product_data["part_number"] = extracted_sku
-                    
-                    sku_found = True
-                    print(f"Found SKU with selector '{sku_selector}': {product_data['part_number']}")
-                    break
-                    
-            except NoSuchElementException:
-                continue
+                # Find all span.sku-text elements
+                sku_elements = card_element.find_elements(By.CSS_SELECTOR, sku_selector)
+                print(f"[DEBUG] Found {len(sku_elements)} span.sku-text elements")
+                if len(sku_elements) > 0:
+                    # Extract Part Number from the first
+                    part_number = extract_sku_from_complex_html(sku_elements[0])
+                    if part_number and part_number.strip():
+                         # Clean up the SKU text                        
+                        product_data["part_number"] = clean_sku_text(part_number)
+                        print(f"[DEBUG] Extracted part_number: {product_data['part_number']}")
+                        sku_found =True 
+                if len(sku_elements) > 1:
+                    # Extract Vendor Part Number from the second
+                    vendor_part_number = extract_sku_from_complex_html(sku_elements[1])
+                    if vendor_part_number and vendor_part_number.strip():
+                        product_data["vendor_part_number"] = clean_sku_text(vendor_part_number.strip())
+                        print(f"[DEBUG] Extracted vendor_part_number: {product_data['vendor_part_number']}")
+            except Exception as e:
+                print(f"Error extracting part numbers for product {card_index}: {e}")
+
+            # ...existing code...
         
         # Fallback: look for common SKU patterns in any text
         if not sku_found:
@@ -552,6 +555,23 @@ def extract_product_data_enhanced(card_element, card_index: int, scraping_config
         print(f"Error extracting quantity for product {card_index}: {e}")
     
     return product_data
+
+def clean_sku_text(part_number: str):
+    """Clean SKU text by removing unwanted characters and whitespace."""
+    if not part_number:
+        return "N/A"
+    
+    # Clean up the SKU text
+    if "Vendor Part #:" in part_number:
+        part_number = part_number.split("Vendor Part #:")[-1].strip()
+    elif "SKU:" in part_number:
+        part_number = part_number.split("SKU:")[-1].strip()
+    elif "Part #:" in part_number:
+        ppart_number = part_number.split("Part #:")[-1].strip()
+    else:
+        part_number = part_number.strip()
+
+    return part_number
 
 def extract_quantity_from_html(quantity_element):
     """Extract quantity from a Selenium WebElement with debug."""
