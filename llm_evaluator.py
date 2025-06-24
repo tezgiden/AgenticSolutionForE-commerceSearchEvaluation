@@ -1,15 +1,17 @@
 # Enhanced LLM Evaluation Module with Inventory-Aware Ranking
 
+from datetime import datetime
 import json
 import requests
 import time
 import re
 from typing import Dict, List, Any, Optional, Union, Tuple
+import os
 
 # --- Configuration ---
 OLLAMA_API_ENDPOINT = "http://localhost:11434/api/generate"
-DEFAULT_MODEL = "gemma3"  # Change to your preferred model
-TIMEOUT = 120  # Seconds to wait for Ollama response
+DEFAULT_MODEL =  "llama3" #"gemma3"  # Change to your preferred model
+TIMEOUT = 600  # Seconds to wait for Ollama response
 MAX_RETRIES = 3  # Number of retries for API calls
 
 # --- Search Type Classification ---
@@ -38,6 +40,8 @@ def classify_search_type(query: str) -> str:
     return "english_word"
 
 # --- Enhanced Prompt Templates with Inventory Awareness ---
+
+
 def get_enhanced_prompt_template(search_type: str) -> str:
     """
     Returns the enhanced prompt template with inventory consideration based on search type.
@@ -48,98 +52,327 @@ def get_enhanced_prompt_template(search_type: str) -> str:
     Returns:
         String containing the enhanced prompt template
     """
+    
+    # Common inventory analysis section
     base_inventory_instruction = """
-IMPORTANT INVENTORY CONSIDERATION:
-When products have the same relevance level, prioritize those with higher available inventory/quantity.
-- If two products both have "High" relevance, the one with more inventory should be ranked higher
-- Only consider inventory as a tie-breaker when relevance levels are equal
-- Products with 0 inventory should be ranked lower than those with available stock, even within the same relevance category
+## INVENTORY IMPACT ANALYSIS
+
+### 📦 Inventory Priority Rules
+1. **Zero Inventory Penalty**: Products with 0 stock automatically drop one relevance tier unless no alternatives exist
+2. **Stock Availability Boost**: Within same relevance tier, rank by inventory descending
+3. **Low Stock Warning**: Flag items with <5 units as "Low Stock Risk"
+4. **Business Impact**: Consider conversion probability based on stock levels
+
+### 📊 Inventory Status Classification
+- **Available**: >10 units in stock
+- **Low Stock**: 1-10 units in stock  
+- **Out of Stock**: 0 units available
+- **Unknown**: No inventory data provided
 """
 
+    # Enhanced evaluation criteria section
+    enhanced_evaluation_criteria = """
+## ENHANCED EVALUATION CRITERIA
+
+### 🔍 Match Quality Assessment
+For each result, evaluate:
+1. **Match Type**: Exact, Partial, Cross-reference, Category, None
+2. **Match Location**: Part Number field, Vendor field, Title, Description
+3. **Match Confidence**: How certain are you this is the intended product?
+4. **Customer Intent**: Would a customer searching for "{query}" want this result?
+
+### 💼 Business Impact Scoring
+Consider:
+- **Conversion Likelihood**: Will customer purchase this result?
+- **Customer Satisfaction**: Does this meet search expectations?
+- **Inventory Efficiency**: Does ranking optimize available stock?
+- **Brand Trust**: Does result quality maintain platform credibility?
+"""
+
+    # Critical evaluation guidelines
+    critical_evaluation_guidelines = """
+## CRITICAL EVALUATION GUIDELINES
+
+### ⚡ Key Priorities
+1. **Exact Matches**: Always prioritize exact part number matches over partial
+2. **Stock Availability**: Never rank out-of-stock items higher than in-stock within same relevance
+3. **Customer Intent**: Ask "Would a customer searching '{query}' be satisfied with this result?"
+4. **Business Value**: Consider both immediate conversion and long-term customer trust
+
+### 🚫 Common Pitfalls to Avoid
+- Don't confuse partial matches with exact matches
+- Don't ignore inventory when ranking within same relevance tier
+- Don't rank based on price or brand preference over relevance
+- Don't give high relevance to products just because they're in stock
+
+### 🎯 Quality Assurance
+- If no exact matches exist, clearly state this in ranking_summary
+- Explain any inventory-based ranking changes
+- Highlight any potential customer satisfaction risks
+- Provide specific, actionable business recommendations
+"""
+
+    # Define templates for each search type
     templates = {
         "english_word": f"""
-Evaluate the relevance of the following search results for the English word query: "{{query}}".
+# E-commerce Search Relevance Evaluation: English Word Query
 
-Search Type: english_word
-Criteria: Assess if the product is contextually relevant to the search term "{{query}}" in an automotive/restaurant supply context. Direct matches (e.g., searching 'gasket' returns gaskets) are High relevance. Related items or accessories might be Medium. Unrelated items are Low.
+You are an expert e-commerce product relevance analyst specializing in automotive and industrial parts.
+
+**SEARCH QUERY**: "{{query}}"  
+**SEARCH TYPE**: english_word  
+**BUSINESS CONTEXT**: E-commerce search optimization for conversion and customer satisfaction
+
+## RELEVANCE EVALUATION FRAMEWORK
+
+### 🎯 **HIGH RELEVANCE**
+- **Direct Product Match**: Product directly matches the search term (e.g., searching "gasket" returns gaskets)
+- **Primary Function**: Product's main purpose aligns with search term
+- **Category Match**: Product belongs to the exact category implied by search term
+
+### 🎯 **MEDIUM RELEVANCE**  
+- **Related Items**: Accessories or complementary products for the search term
+- **Similar Function**: Products that serve a similar but not identical purpose
+- **Secondary Use**: Products that can be used for the searched purpose but aren't primary
+
+### 🎯 **LOW RELEVANCE**
+- **Unrelated Items**: Products that don't logically connect to the search term
+- **Different Category**: Products from completely different automotive/industrial categories
+- **Keyword Coincidence**: Products that only share words but different context
 
 {base_inventory_instruction}
 
-Results:
-{{results_text}}
+{enhanced_evaluation_criteria}
 
-Provide your evaluation for each result in JSON format. Include both relevance and inventory considerations:
+## OUTPUT FORMAT
+
+MAKE SURE TO Provide your evaluation in JSON format devinde below each item provided in the "RESULTS TO EVALUATE" section MUST have a "evaluations" in the OUTPUT FORMAT As defined below:
+
+```json
 {{{{
+  "search_analysis": {{{{
+    "query": "{{query}}",
+    "total_results": 0,
+    "category_matches_found": 0,
+    "inventory_considerations_applied": true
+  }}}}
   "evaluations": [
     {{{{
       "result_index": 0,
-      "relevance": "High|Medium|Low",
-      "inventory_status": "Available|Low Stock|Out of Stock",
-      "inventory_quantity": "parsed quantity or 'N/A'",
-      "justification": "Your justification here, including inventory consideration if applicable",
-      "inventory_impact": "Whether inventory affected the ranking within the same relevance tier"
-    }}}},
-    ...
+      "relevance_tier": "High|Medium|Low",
+      "relevance_score": "1-10",
+      "match_type": "Direct|Related|Category|Unrelated",
+      "inventory_status": "Available|Low Stock|Out of Stock|Unknown",
+      "inventory_quantity": "actual number or N/A",
+      "part_number": "actual part number or N/A",
+      "vendor_part_number": "actual vendor part number or N/A",
+      "justification": "Detailed explanation of why this relevance tier was assigned",
+      "inventory_impact": "How inventory affected ranking within relevance tier",
+      "business_impact": "Excellent|Good|Fair|Poor",
+      "recommended_action": "Promote|Maintain|Demote|Remove"
+    }}}}...
   ],
-  "ranking_summary": "Brief explanation of how inventory influenced the final ranking"
+  "ranking_summary": "Overall assessment of search result quality and inventory impact",
+  "business_recommendations": [
+    "Specific suggestions for improving search results"
+  ],
+  "quality_score": "1-10",
+  "conversion_likelihood": "High|Medium|Low"
 }}}}
+```
+
+{critical_evaluation_guidelines}
+
+**RESULTS TO EVALUATE:**
+{{results_text}}
 """,
+
         "part_number": f"""
-Evaluate the relevance of the following search results for the part number query: "{{query}}".
+# E-commerce Search Relevance Evaluation: Part Number Query
 
-Search Type: part_number
-Criteria: Assess the match between the input part number "{{query}}" and the part numbers listed in the results.
-- High Relevance: Exact match of the primary part number in the 'Part Number' field or clearly in the 'Title'.
-- Medium Relevance: Input is a substring of the result's part number, the result's part number is a substring of the input, or the result is explicitly identified as a cross-reference/alternative/compatible part in the title.
-- Low Relevance: No discernible match or relationship found in the part number or title.
+You are an expert e-commerce product relevance analyst specializing in automotive and industrial parts.
+
+**SEARCH QUERY**: "{{query}}"  
+**SEARCH TYPE**: part_number  
+**BUSINESS CONTEXT**: E-commerce part number search optimization for conversion and customer satisfaction
+
+## RELEVANCE EVALUATION FRAMEWORK
+
+### 🎯 **HIGH RELEVANCE (Score: 9-10)**
+**Exact Match Criteria (Prioritized Order):**
+1. **Primary Part Number**: Complete character-for-character match in 'Part Number' field
+2. **Vendor Part Number**: Complete character-for-character match in 'Vendor Part Number' field  
+3. **Manufacturer Part Number**: Complete character-for-character match in manufacturer-specific fields
+4. **Title Exact Match**: Query appears as standalone complete part number in product title
+
+**Examples:**
+- ✅ Search: "4707Q" → Part Number: "4707Q" (EXACT)
+- ❌ Search: "4707Q" → Part Number: "SDNS-4707Q" (PARTIAL - not exact)
+- ✅ Search: "BK608" → Title: "Vulcan BK608 Bearing Kit" (EXACT in title)
+
+### 🎯 **MEDIUM RELEVANCE (Score: 6-8)**
+**Partial Match Criteria:**
+1. **Substring Match**: Query is contained within part number (e.g., "4707Q" in "SDNS-4707Q")
+2. **Reverse Substring**: Part number is contained within query (longer query, shorter part)
+3. **Cross-Reference Match**: Explicitly labeled as "Compatible with", "Replaces", "Alternative for"
+4. **Model/Series Match**: Part of same product series or model family
+5. **Functional Equivalent**: Same function but different manufacturer designation
+
+**Quality Indicators for Medium:**
+- Clear compatibility statements in title/description
+- Recognized industry cross-reference relationships
+- Same product category with part number similarity
+
+### 🎯 **LOW RELEVANCE (Score: 1-5)**
+**Weak or No Match:**
+1. **Category Only**: Same product type but no part number relationship
+2. **Keyword Overlap**: Only shares common words but different context
+3. **Unrelated**: Different product category or no logical connection
+4. **False Positive**: Incidental number matches in unrelated fields
 
 {base_inventory_instruction}
 
-Results:
-{{results_text}}
+{enhanced_evaluation_criteria}
 
-Provide your evaluation for each result in JSON format. Include both relevance and inventory considerations:
+## OUTPUT FORMAT
+
+MAKE SURE TO Provide your evaluation in JSON format devinde below each item provided in the "RESULTS TO EVALUATE" section MUST have a "evaluations" in the OUTPUT FORMAT As defined below:
+
+```json
 {{{{
+     "search_analysis": {{{{
+    "query": "{{query}}",
+    "total_results": 0,
+    "exact_matches_found": 0,
+    "partial_matches_found": 0,
+    "inventory_considerations_applied": true
+  }}}}
   "evaluations": [
     {{{{
       "result_index": 0,
-      "relevance": "High|Medium|Low",
-      "inventory_status": "Available|Low Stock|Out of Stock",
-      "inventory_quantity": "parsed quantity or 'N/A'",
-      "justification": "Your justification here, mentioning the match type and inventory consideration if applicable",
-      "inventory_impact": "Whether inventory affected the ranking within the same relevance tier"
-    }}}},
-    ...
+      "relevance_score": "1-10",
+      "relevance_tier": "High|Medium|Low",
+      "match_type": "Exact|Partial|Cross-reference|Category|None",
+      "match_location": "Part Number|Vendor Part Number|Title|Description|Multiple",
+      "match_confidence": "Very High|High|Medium|Low|Very Low",
+      "inventory_status": "Available|Low Stock|Out of Stock|Unknown",
+      "inventory_quantity": "actual number or N/A",
+      "part_number": "actual part number or N/A",
+      "vendor_part_number": "actual vendor part number or N/A",
+      "business_impact": "Excellent|Good|Fair|Poor",
+      "justification": "Detailed explanation of match quality, location, and why this relevance tier was assigned",
+      "inventory_impact": "How inventory affected ranking within relevance tier",
+      "customer_satisfaction_risk": "Low|Medium|High",
+      "recommended_action": "Promote|Maintain|Demote|Remove"
+    }}}}...
   ],
-  "ranking_summary": "Brief explanation of how inventory influenced the final ranking"
+  "ranking_summary": "Overall assessment of how inventory and relevance combined to create final ranking",
+  "business_recommendations": [
+    "Specific actionable insights for improving search results",
+    "Inventory management suggestions",
+    "Customer experience improvements"
+  ],
+  "quality_score": "Overall search result quality (1-10)",
+  "conversion_likelihood": "High|Medium|Low based on result relevance and availability"
 }}}}
+```
+
+{critical_evaluation_guidelines}
+
+**RESULTS TO EVALUATE:**
+{{results_text}}
 """,
-        "multiple_terms": f"""
-Evaluate the relevance of the following search results for the multi-term query: "{{query}}".
 
-Search Type: multiple_terms
-Criteria: Assess if the product result satisfies the combination of key constraints specified in the query "{{query}}". Consider product type, brand, application details, etc., mentioned in the query. High relevance if the product title/details match most or all key terms. Relevance decreases as fewer terms are matched or if details contradict the query.
+        "multiple_terms": f"""
+# E-commerce Search Relevance Evaluation: Multi-Term Query
+
+You are an expert e-commerce product relevance analyst specializing in automotive and industrial parts.
+
+**SEARCH QUERY**: "{{query}}"  
+**SEARCH TYPE**: multiple_terms  
+**BUSINESS CONTEXT**: E-commerce multi-term search optimization for conversion and customer satisfaction
+
+## RELEVANCE EVALUATION FRAMEWORK
+
+### 🎯 **HIGH RELEVANCE**
+**Multi-Term Match Criteria:**
+- **All Key Terms Matched**: Product title/description contains all important terms from query
+- **Logical Relationship**: Terms relate to each other as expected (brand + part type, model + component)
+- **Primary Match**: Product directly serves the intent implied by the term combination
+- **Contextual Accuracy**: Terms appear in logical context within product information
+
+**Examples:**
+- Search: "toyota brake pad" → Product: "Toyota Genuine Brake Pad Set" (ALL terms matched)
+- Search: "commercial refrigerator door" → Product: "Commercial Refrigerator Door Gasket" (ALL terms + context)
+
+### 🎯 **MEDIUM RELEVANCE**
+**Partial Multi-Term Match:**
+- **Most Terms Matched**: Contains majority of key terms but missing some
+- **Compatible/Related**: Product works with or relates to the searched combination
+- **Alternative Terms**: Uses synonyms or industry-equivalent terms
+- **Functional Match**: Serves the same purpose but different terminology
+
+**Examples:**
+- Search: "ford engine filter" → Product: "Ford Air Filter" (missing "engine" but contextually correct)
+- Search: "stainless steel bolt" → Product: "SS Hex Bolt" (SS = stainless steel synonym)
+
+### 🎯 **LOW RELEVANCE**
+**Weak Multi-Term Match:**
+- **Few Terms Matched**: Only matches one or two terms with no logical connection
+- **Different Context**: Terms exist but in unrelated context
+- **Category Mismatch**: Wrong product category despite term overlap
+- **Incidental Matches**: Terms appear coincidentally without relevance
 
 {base_inventory_instruction}
 
-Results:
-{{results_text}}
+{enhanced_evaluation_criteria}
 
-Provide your evaluation for each result in JSON format. Include both relevance and inventory considerations:
+## OUTPUT FORMAT
+
+MAKE SURE TO Provide your evaluation in JSON format devinde below each item provided in the "RESULTS TO EVALUATE" section MUST have a "evaluations" in the OUTPUT FORMAT As defined below:
+
+```json
 {{{{
+  "search_analysis": {{{{
+    "query": "{{query}}",
+    "query_terms": ["term1", "term2", "term3"],
+    "total_results": 0,
+    "full_matches_found": 0,
+    "partial_matches_found": 0,
+    "inventory_considerations_applied": true
+  }}}}
   "evaluations": [
     {{{{
       "result_index": 0,
-      "relevance": "High|Medium|Low",
-      "inventory_status": "Available|Low Stock|Out of Stock",
-      "inventory_quantity": "parsed quantity or 'N/A'",
-      "justification": "Your justification here, explaining which terms matched and inventory consideration if applicable",
-      "inventory_impact": "Whether inventory affected the ranking within the same relevance tier"
-    }}}},
-    ...
+      "relevance_tier": "High|Medium|Low",
+      "relevance_score": "1-10",
+      "terms_matched": ["matched_term1", "matched_term2"],
+      "terms_missing": ["missing_term1"],
+      "match_quality": "All Key Terms|Most Terms|Some Terms|Few Terms",
+      "contextual_accuracy": "Excellent|Good|Fair|Poor",
+      "inventory_status": "Available|Low Stock|Out of Stock|Unknown",
+      "inventory_quantity": "actual number or N/A",
+      "part_number": "actual part number or N/A",
+      "vendor_part_number": "actual vendor part number or N/A",
+      "justification": "Detailed explanation of which terms matched, context quality, and relevance reasoning",
+      "inventory_impact": "How inventory affected ranking within relevance tier",
+      "business_impact": "Excellent|Good|Fair|Poor",
+      "recommended_action": "Promote|Maintain|Demote|Remove"
+    }}}}...
   ],
-  "ranking_summary": "Brief explanation of how inventory influenced the final ranking"
+  "ranking_summary": "Overall assessment of multi-term matching quality and inventory impact",
+  "business_recommendations": [
+    "Specific suggestions for improving multi-term search results"
+  ],
+  "quality_score": "1-10",
+  "conversion_likelihood": "High|Medium|Low"
 }}}}
+```
+
+{critical_evaluation_guidelines}
+
+**RESULTS TO EVALUATE:**
+{{results_text}}
 """
     }
     
@@ -162,6 +395,9 @@ def format_results_for_enhanced_prompt(results: List[Dict[str, str]]) -> str:
         formatted_text += f"Result {i}:\n"
         formatted_text += f"Title: {result.get('title', 'N/A')}\n"
         formatted_text += f"Part Number: {result.get('part_number', 'N/A')}\n"
+        formatted_text += f"Vendor Part Number: {result.get('vendor_part_number', 'N/A')}\n"
+        formatted_text += f"Manufacturer Part Number: {result.get('manufacturer_part_number', 'N/A')}\n"
+        formatted_text += f"Description: {result.get('description', 'N/A')}\n"
         formatted_text += f"Price: {result.get('price', 'N/A')}\n"
         
         # Emphasize inventory information
@@ -258,7 +494,7 @@ def apply_inventory_aware_ranking(evaluations: List[Dict[str, Any]],
         relevance_groups["Medium"] + 
         relevance_groups["Low"]
     )
-    
+    print(f"Reordered evaluations: {reordered_evaluations} (High: {len(relevance_groups['High'])}, Medium: {len(relevance_groups['Medium'])}, Low: {len(relevance_groups['Low'])})      ")
     return reordered_evaluations
 
 # --- Ollama API Interaction with Configuration Support ---
@@ -316,7 +552,7 @@ def parse_enhanced_llm_response(response: Dict[str, Any]) -> Optional[Dict[str, 
     
     try:
         generated_text = response.get("response", "")
-        print(f"Raw LLM response: {generated_text[:1500]}...")  # Print first 500 chars for debugging
+        print(f"Raw LLM response: {generated_text[:1500]}...")  # Print first 1500 chars for debugging
         # Remove markdown code blocks if present
         if "```json" in generated_text:
             # Extract content between ```json and ```
@@ -403,6 +639,79 @@ def parse_enhanced_llm_response(response: Dict[str, Any]) -> Optional[Dict[str, 
         print(f"Unexpected error parsing LLM response: {e}")
         return extract_evaluations_manually(response.get("response", ""))
 
+def extract_evaluations_manually(text: str) -> Optional[Dict[str, Any]]:
+    """
+    Manually extract evaluation information from text when JSON parsing fails.
+    """
+    try:
+        evaluations = []
+        
+        # Look for result patterns
+        result_patterns = [
+            r'result_index["\']?\s*:\s*(\d+)',
+            r'Result\s*(\d+)',
+            r'result\s*(\d+)',
+        ]
+        
+        relevance_patterns = [
+            r'relevance["\']?\s*:\s*["\']?(High|Medium|Low)["\']?',
+            r'(High|Medium|Low)\s*relevance',
+            r'relevance.*?(High|Medium|Low)',
+        ]
+        
+        justification_patterns = [
+            r'justification["\']?\s*:\s*["\']([^"\']+)["\']',
+            r'justification.*?[:]\s*([^,}\]]+)',
+        ]
+        
+        # Extract all matches
+        result_indices = []
+        for pattern in result_patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE)
+            if matches:
+                result_indices.extend([int(m) for m in matches])
+        
+        relevances = []
+        for pattern in relevance_patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE)
+            if matches:
+                relevances.extend(matches)
+        
+        justifications = []
+        for pattern in justification_patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE | re.DOTALL)
+            if matches:
+                justifications.extend([m.strip() for m in matches])
+        
+        # Create evaluations from extracted data
+        max_results = max(len(result_indices), len(relevances), len(justifications))
+        
+        for i in range(max_results):
+            evaluation = {
+                "result_index": result_indices[i] if i < len(result_indices) else i,
+                "relevance": relevances[i] if i < len(relevances) else "Medium",
+                "justification": justifications[i] if i < len(justifications) else f"Manual extraction for result {i}",
+                "inventory_status": "Unknown",
+                "inventory_quantity": "N/A",
+                "inventory_impact": "N/A"
+            }
+            evaluations.append(evaluation)
+        
+        if evaluations:
+            print(f"Manually extracted {len(evaluations)} evaluations")
+            return {
+                "evaluations": evaluations,
+                "ranking_summary": "Manually extracted due to JSON parsing issues"
+            }
+        else:
+            print("Manual extraction also failed")
+            return None
+            
+    except Exception as e:
+        print(f"Manual extraction error: {e}")
+        return None# Enhanced LLM Evaluation Module with Inventory-Aware Ranking - COMPLETE VERSION
+
+
 # --- Main Enhanced Evaluation Function ---
 def evaluate_search_results_with_inventory(query: str, results: List[Dict[str, str]], 
                                           search_type: Optional[str] = None, 
@@ -441,12 +750,36 @@ def evaluate_search_results_with_inventory(query: str, results: List[Dict[str, s
     # Fill in the prompt template
     prompt = prompt_template.format(query=query, results_text=results_text)
     
+    # Create a safe filename with date-time
+    debug_dir = "llm_debug"
+    os.makedirs(debug_dir, exist_ok=True)
+    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"prompt_{now}.txt"
+
+    # Write the prompt to the file
+    with open(os.path.join(debug_dir, filename), "w", encoding="utf-8") as f:
+        f.write(prompt)
+
+    print(f"Prompt dumped to {filename}")
     # Query the LLM with configuration parameters
     llm_response = query_ollama(prompt, model, api_endpoint, timeout, max_retries)
     
     # Parse the enhanced response
     parsed_evaluations = parse_enhanced_llm_response(llm_response)
     
+    # Save prompt, llm_response, and parsed evaluations for debugging
+    
+    debug_file = os.path.join(debug_dir, f"llm_debug_data_{now}.json")
+    try:
+        with open(debug_file, "w", encoding="utf-8") as f:
+            json.dump({
+                "prompt": prompt,
+                "llm_response": llm_response,
+                "parsed_evaluations": parsed_evaluations
+            }, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"Failed to save debug data: {e}")
+
     if parsed_evaluations:
         evaluations = parsed_evaluations.get("evaluations", [])
         
@@ -486,6 +819,100 @@ def evaluate_search_results(query: str, results: List[Dict[str, str]],
     return evaluate_search_results_with_inventory(
         query, results, search_type, model, apply_post_ranking=True
     )
+
+
+
+
+def validate_prompt_template(template: str, search_type: str) -> Dict[str, Any]:
+    """
+    Validates the prompt template for common issues.
+    
+    Args:
+        template: The prompt template string
+        search_type: The type of search this template is for
+        
+    Returns:
+        Dictionary with validation results
+    """
+    validation_result = {
+        "is_valid": True,
+        "warnings": [],
+        "errors": [],
+        "suggestions": []
+    }
+    
+    # Check for required placeholders
+    required_placeholders = ["{query}", "{results_text}"]
+    for placeholder in required_placeholders:
+        if placeholder not in template:
+            validation_result["errors"].append(f"Missing required placeholder: {placeholder}")
+            validation_result["is_valid"] = False
+    
+    # Check for JSON format specification
+    if "json" not in template.lower():
+        validation_result["warnings"].append("Template should specify JSON output format")
+    
+    # Check for inventory considerations
+    if "inventory" not in template.lower():
+        validation_result["warnings"].append("Template should include inventory considerations")
+    
+    # Check for business context
+    if "business" not in template.lower():
+        validation_result["suggestions"].append("Consider adding business context for better AI understanding")
+    
+    # Check template length (should be comprehensive but not too verbose)
+    if len(template) < 1000:
+        validation_result["warnings"].append("Template might be too short for comprehensive evaluation")
+    elif len(template) > 5000:
+        validation_result["warnings"].append("Template might be too long, consider reducing verbosity")
+    
+    return validation_result
+
+def test_prompt_generation():
+    """Test the prompt generation function with sample data."""
+    
+    search_types = ["english_word", "part_number", "multiple_terms"]
+    
+    for search_type in search_types:
+        print(f"\n{'='*60}")
+        print(f"Testing {search_type} template:")
+        print(f"{'='*60}")
+        
+        # Generate template
+        template = get_enhanced_prompt_template(search_type)
+        
+        # Validate template
+        validation = validate_prompt_template(template, search_type)
+        
+        print(f"Template Length: {len(template)} characters")
+        print(f"Validation Status: {'✅ Valid' if validation['is_valid'] else '❌ Invalid'}")
+        
+        if validation["errors"]:
+            print("❌ Errors:")
+            for error in validation["errors"]:
+                print(f"  - {error}")
+        
+        if validation["warnings"]:
+            print("⚠️ Warnings:")
+            for warning in validation["warnings"]:
+                print(f"  - {warning}")
+        
+        if validation["suggestions"]:
+            print("💡 Suggestions:")
+            for suggestion in validation["suggestions"]:
+                print(f"  - {suggestion}")
+        
+        # Test template formatting
+        try:
+            sample_query = "test_query"
+            sample_results = "Sample result data"
+            formatted_template = template.format(query=sample_query, results_text=sample_results)
+            print("✅ Template formatting successful")
+        except Exception as e:
+            print(f"❌ Template formatting failed: {e}")
+        
+        print(f"\nTemplate Preview (first 200 chars):")
+        print(f"{template[:200]}...")
 
 # --- Enhanced Test Function ---
 def test_enhanced_evaluation(model: str = DEFAULT_MODEL) -> None:
@@ -601,77 +1028,3 @@ if __name__ == "__main__":
     except requests.exceptions.RequestException as e:
         print(f"Error connecting to Ollama: {e}")
         print("Is Ollama running? Start it with 'ollama serve' or install from https://ollama.ai/")
-
-
-
-def extract_evaluations_manually(text: str) -> Optional[Dict[str, Any]]:
-    """
-    Manually extract evaluation information from text when JSON parsing fails.
-    """
-    try:
-        evaluations = []
-        
-        # Look for result patterns
-        result_patterns = [
-            r'result_index["\']?\s*:\s*(\d+)',
-            r'Result\s*(\d+)',
-            r'result\s*(\d+)',
-        ]
-        
-        relevance_patterns = [
-            r'relevance["\']?\s*:\s*["\']?(High|Medium|Low)["\']?',
-            r'(High|Medium|Low)\s*relevance',
-            r'relevance.*?(High|Medium|Low)',
-        ]
-        
-        justification_patterns = [
-            r'justification["\']?\s*:\s*["\']([^"\']+)["\']',
-            r'justification.*?[:]\s*([^,}\]]+)',
-        ]
-        
-        # Extract all matches
-        result_indices = []
-        for pattern in result_patterns:
-            matches = re.findall(pattern, text, re.IGNORECASE)
-            if matches:
-                result_indices.extend([int(m) for m in matches])
-        
-        relevances = []
-        for pattern in relevance_patterns:
-            matches = re.findall(pattern, text, re.IGNORECASE)
-            if matches:
-                relevances.extend(matches)
-        
-        justifications = []
-        for pattern in justification_patterns:
-            matches = re.findall(pattern, text, re.IGNORECASE | re.DOTALL)
-            if matches:
-                justifications.extend([m.strip() for m in matches])
-        
-        # Create evaluations from extracted data
-        max_results = max(len(result_indices), len(relevances), len(justifications))
-        
-        for i in range(max_results):
-            evaluation = {
-                "result_index": result_indices[i] if i < len(result_indices) else i,
-                "relevance": relevances[i] if i < len(relevances) else "Medium",
-                "justification": justifications[i] if i < len(justifications) else f"Manual extraction for result {i}",
-                "inventory_status": "Unknown",
-                "inventory_quantity": "N/A",
-                "inventory_impact": "N/A"
-            }
-            evaluations.append(evaluation)
-        
-        if evaluations:
-            print(f"Manually extracted {len(evaluations)} evaluations")
-            return {
-                "evaluations": evaluations,
-                "ranking_summary": "Manually extracted due to JSON parsing issues"
-            }
-        else:
-            print("Manual extraction also failed")
-            return None
-            
-    except Exception as e:
-        print(f"Manual extraction error: {e}")
-        return None# Enhanced LLM Evaluation Module with Inventory-Aware Ranking - COMPLETE VERSION

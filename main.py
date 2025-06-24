@@ -1,5 +1,6 @@
 # Configurable Main Orchestrator for Multi-Site Agentic Search Solution
 
+from datetime import datetime
 import json
 import time
 import os
@@ -85,8 +86,8 @@ def analyze_inventory_impact(evaluation_results: dict, original_results: list) -
                 analysis['inventory_changes_detected'] = True
                 analysis['ranking_changes'].append({
                     'relevance_tier': relevance_level,
-                    'original_order': [item['index'] for item in original_order],
-                    'new_order': [item['index'] for item in current_order],
+                    'original_order': [item['part_number'] for item in original_order],
+                    'new_order': [item['part_number'] for item in current_order],
                     'reasoning': f"Inventory-based reordering within {relevance_level} relevance tier"
                 })
     
@@ -381,7 +382,8 @@ def run_configurable_agentic_search(config: AppConfig) -> None:
             for i, result in enumerate(scraped_results):
                 title_short = result.get('title', 'N/A')[:40] + '...' if len(result.get('title', '')) > 40 else result.get('title', 'N/A')
                 quantity = result.get('quantity', 'N/A')
-                print(f"  {i}: {title_short} | Qty: {quantity}")
+                part_number = result.get('part_number', 'N/A')
+                print(f"  {i}: {title_short} | Qty: {quantity} | Part Number: {part_number}")
 
             # 2. Enhanced Evaluation with Inventory Awareness
             print("--- Step 2: Enhanced evaluation with inventory-aware LLM ---")
@@ -488,15 +490,15 @@ def run_configurable_agentic_search(config: AppConfig) -> None:
                 "environment": config.deployment_config.environment
             }
         }
-        
-        output_file = config.site_config.output_config.output_file
+        now = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_file = f"{config.site_config.output_config.output_file}_{now}.json"
         with open(output_file, "w") as f:
             json.dump(final_output, f, indent=4)
         print(f"\nFinal results saved to {output_file}")
         
         # Save detailed analysis if enabled
         if config.evaluation_config.enable_detailed_analysis and detailed_analysis:
-            detailed_file = config.site_config.output_config.detailed_output_file
+            detailed_file = f"{config.site_config.output_config.detailed_output_file}_{now}.json"
             with open(detailed_file, "w") as f:
                 json.dump({
                     "detailed_analysis": detailed_analysis,

@@ -1,6 +1,8 @@
 # Configurable Web Scraping Module (Python + Selenium)
 
+from datetime import datetime
 import os
+import re
 import sys
 import argparse
 import json
@@ -768,8 +770,7 @@ def scrape_site_with_config(driver, search_term: str, site_config: SiteConfig, d
             # Wait for page to finish loading
             wait_for_page_load(driver, 10)
             # Wait a bit more for the quantity to process
-            time.sleep(8)
-           
+            
             # First check if we got a "no results" message
             if check_for_no_results_with_config(driver, search_term, scraping_config):
                 print(f"Search for '{search_term}' returned no results.")
@@ -800,7 +801,10 @@ def scrape_site_with_config(driver, search_term: str, site_config: SiteConfig, d
             print("Search results page loaded")
             # take_screenshots = config.deployment_config.enable_screenshots
             # if take_screenshots:
-            take_screenshot(driver, "05_after_searchReulstLoaded", "After Search Results are loaded")
+            now = datetime.now().strftime("%Y%m%d_%H%M%S")
+            safe_search_term = re.sub(r'[^A-Za-z0-9]+', '_', search_term).strip('_')
+            filename = f"search_results_{safe_search_term}_{now}.json"
+            take_screenshot(driver, filename, "After Search Results are loaded")
 
         except Exception as e:
             print(f"Error waiting for results: {e}")
@@ -1271,7 +1275,8 @@ if __name__ == "__main__":
                 print("--- All scraping finished ---\n")
 
             # Save results to a JSON file
-            output_file = "configurable_scraped_results.json"
+            now = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_file = f"configurable_scraped_results_{now}.json"
             try:
                 with open(output_file, "w") as f:
                     json.dump(all_results, f, indent=4)

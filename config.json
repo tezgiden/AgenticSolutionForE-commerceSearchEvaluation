@@ -40,7 +40,7 @@
           "div.message-no-item-alert",
           "div.message-alert"
         ],
-        "max_results_per_query": 10,
+        "max_results_per_query": 20,
         "wait_timeout": 10,
         "page_load_timeout": 30
       },
@@ -165,8 +165,8 @@
   },
   "llm_config": {
     "ollama_api_endpoint": "http://localhost:11434/api/generate",
-    "default_model": "gemma3",
-    "timeout": 240,
+    "default_model": "llama3",
+    "timeout": 600,
     "max_retries": 3
   },
   "evaluation_config": {
