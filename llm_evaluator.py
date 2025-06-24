@@ -144,7 +144,7 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 🚨 **MANDATORY**: You MUST evaluate EVERY SINGLE result provided in the "RESULTS TO EVALUATE" section.
 🚨 **COUNT VERIFICATION**: The evaluation array must contain exactly {{search_result_count}} entries (Results 0-{{search_result_count_minus_one}}).
 🚨 **NO SHORTCUTS**: Do not use "..." or skip any results. Each result requires a complete evaluation.
-🚨 **VALIDATION**: Before finishing, verify your "evaluations" array has {{search_result_count}} entries matching the {{search_result_count_minus_one}} input results.
+🚨 **VALIDATION**: Before finishing, verify your "evaluations" array has {{search_result_count}} entries matching the {{search_result_count}} input results.
 
 
 
@@ -221,13 +221,20 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 **SEARCH TYPE**: part_number  
 **BUSINESS CONTEXT**: E-commerce part number search optimization for conversion and customer satisfaction
 
-## CRITICAL INSTRUCTION: COMPLETE EVALUATION REQUIRED
 
-🚨 **MANDATORY**: You MUST evaluate EVERY SINGLE result provided in the "RESULTS TO EVALUATE" section.
-🚨 **COUNT VERIFICATION**: The evaluation array must contain exactly {{search_result_count}} entries (Results 0-{{search_result_count_minus_one}}).
-🚨 **NO SHORTCUTS**: Do not use "..." or skip any results. Each result requires a complete evaluation.
-🚨 **VALIDATION**: Before finishing, verify your "evaluations" array has {{search_result_count}} entries matching the {{search_result_count_minus_one}} input results.
+🚨 CRITICAL INSTRUCTIONS - READ CAREFULLY
+MANDATORY REQUIREMENTS:
 
+You MUST evaluate ALL {{search_result_count}} results (indices 0-{{search_result_count_minus_one}}) provided below
+Your response MUST be valid JSON format only - no additional text
+NO shortcuts, ellipsis (...), or incomplete entries allowed
+Each evaluation must include ALL required fields
+
+COUNT VERIFICATION:
+
+Input: {{search_result_count}} results (Result 0 through Result {{search_result_count_minus_one}})
+Output: Exactly {{search_result_count}} evaluations in JSON array
+Before finishing: Count your evaluations = {{search_result_count}}
 
 ## RELEVANCE EVALUATION FRAMEWORK
 
@@ -251,10 +258,6 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 4. **Model/Series Match**: Part of same product series or model family
 5. **Functional Equivalent**: Same function but different manufacturer designation
 
-**Quality Indicators for Medium:**
-- Clear compatibility statements in title/description
-- Recognized industry cross-reference relationships
-- Same product category with part number similarity
 
 ### 🎯 **LOW RELEVANCE (Score: 1-5)**
 **Weak or No Match:**
@@ -310,10 +313,18 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 }}}}
 ```
 
+FINAL REMINDER:
+
+Response must be ONLY the JSON above
+Must contain exactly {{search_result_count}} evaluations (indices 0-{{search_result_count_minus_one}})
+No additional text before or after JSON
+Each justification: maximum 10 words
+
 {critical_evaluation_guidelines}
 
 **RESULTS TO EVALUATE:**
 {{results_text}}
+
 """,
 
         "multiple_terms": f"""
@@ -331,7 +342,7 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 🚨 **MANDATORY**: You MUST evaluate EVERY SINGLE result provided in the "RESULTS TO EVALUATE" section.
 🚨 **COUNT VERIFICATION**: The evaluation array must contain exactly {{search_result_count}} entries (Results 0-{{search_result_count_minus_one}}).
 🚨 **NO SHORTCUTS**: Do not use "..." or skip any results. Each result requires a complete evaluation.
-🚨 **VALIDATION**: Before finishing, verify your "evaluations" array has {{search_result_count}} entries matching the {{search_result_count_minus_one}} input results.
+🚨 **VALIDATION**: Before finishing, verify your "evaluations" array has {{search_result_count}} entries matching the {{search_result_count}} input results.
 
 ## RELEVANCE EVALUATION FRAMEWORK
 
