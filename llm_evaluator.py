@@ -93,6 +93,21 @@ Consider:
     critical_evaluation_guidelines = """
 ## CRITICAL EVALUATION GUIDELINES
 
+Before submitting your response, verify:
+
+✅ Evaluated exactly {search_result_count} results (indices 0-{search_result_count_minus_one})
+✅ Each evaluation has all required fields
+✅ No "..." or incomplete entries
+✅ "total_results" in search_analysis equals {search_result_count}
+✅ Length of "evaluations" array equals {search_result_count}
+
+IMPORTANT REMINDERS
+
+COMPLETE ALL {search_result_count}: Do not stop early or use shortcuts
+BRIEF BUT COMPLETE: Keep justifications concise but ensure every result is evaluated
+CONSISTENT FORMAT: Use exact same JSON structure for all {search_result_count} entries
+VERIFY COUNT: Double-check you have exactly {search_result_count} evaluations before finishing
+
 ### ⚡ Key Priorities
 1. **Exact Matches**: Always prioritize exact part number matches over partial
 2. **Stock Availability**: Never rank out-of-stock items higher than in-stock within same relevance
@@ -123,19 +138,29 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 **SEARCH TYPE**: english_word  
 **BUSINESS CONTEXT**: E-commerce search optimization for conversion and customer satisfaction
 
+
+## CRITICAL INSTRUCTION: COMPLETE EVALUATION REQUIRED
+
+🚨 **MANDATORY**: You MUST evaluate EVERY SINGLE result provided in the "RESULTS TO EVALUATE" section.
+🚨 **COUNT VERIFICATION**: The evaluation array must contain exactly {{search_result_count}} entries (Results 0-{{search_result_count_minus_one}}).
+🚨 **NO SHORTCUTS**: Do not use "..." or skip any results. Each result requires a complete evaluation.
+🚨 **VALIDATION**: Before finishing, verify your "evaluations" array has {{search_result_count}} entries matching the {{search_result_count_minus_one}} input results.
+
+
+
 ## RELEVANCE EVALUATION FRAMEWORK
 
-### 🎯 **HIGH RELEVANCE**
+### 🎯 **HIGH RELEVANCE (Score: 9-10)**
 - **Direct Product Match**: Product directly matches the search term (e.g., searching "gasket" returns gaskets)
 - **Primary Function**: Product's main purpose aligns with search term
 - **Category Match**: Product belongs to the exact category implied by search term
 
-### 🎯 **MEDIUM RELEVANCE**  
+### 🎯 **MEDIUM RELEVANCE (Score: 6-8)**  
 - **Related Items**: Accessories or complementary products for the search term
 - **Similar Function**: Products that serve a similar but not identical purpose
 - **Secondary Use**: Products that can be used for the searched purpose but aren't primary
 
-### 🎯 **LOW RELEVANCE**
+### 🎯 **LOW RELEVANCE (Score: 1-5)**
 - **Unrelated Items**: Products that don't logically connect to the search term
 - **Different Category**: Products from completely different automotive/industrial categories
 - **Keyword Coincidence**: Products that only share words but different context
@@ -146,7 +171,7 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 
 ## OUTPUT FORMAT
 
-MAKE SURE TO Provide your evaluation in JSON format devinde below each item provided in the "RESULTS TO EVALUATE" section MUST have a "evaluations" in the OUTPUT FORMAT As defined below:
+**CRITICAL**: Your response must include exactly {{search_result_count}} evaluation entries in the "evaluations" array, one for each Result (0-{{search_result_count_minus_one}}).
 
 ```json
 {{{{
@@ -155,7 +180,7 @@ MAKE SURE TO Provide your evaluation in JSON format devinde below each item prov
     "total_results": 0,
     "category_matches_found": 0,
     "inventory_considerations_applied": true
-  }}}}
+  }}}}  ← **IMPORTANT: COMMA HERE**
   "evaluations": [
     {{{{
       "result_index": 0,
@@ -170,14 +195,14 @@ MAKE SURE TO Provide your evaluation in JSON format devinde below each item prov
       "inventory_impact": "How inventory affected ranking within relevance tier",
       "business_impact": "Excellent|Good|Fair|Poor",
       "recommended_action": "Promote|Maintain|Demote|Remove"
-    }}}}...
+    }}}}... [CONTINUE FOR ALL {{search_result_count}} RESULTS - DO NOT USE "..." IN ACTUAL RESPONSE]
   ],
   "ranking_summary": "Overall assessment of search result quality and inventory impact",
   "business_recommendations": [
     "Specific suggestions for improving search results"
-  ],
-  "quality_score": "1-10",
-  "conversion_likelihood": "High|Medium|Low"
+  ],  
+  "quality_score": "Overall search result quality (1-10)",
+  "conversion_likelihood": "High|Medium|Low based on result relevance and availability"
 }}}}
 ```
 
@@ -195,6 +220,14 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 **SEARCH QUERY**: "{{query}}"  
 **SEARCH TYPE**: part_number  
 **BUSINESS CONTEXT**: E-commerce part number search optimization for conversion and customer satisfaction
+
+## CRITICAL INSTRUCTION: COMPLETE EVALUATION REQUIRED
+
+🚨 **MANDATORY**: You MUST evaluate EVERY SINGLE result provided in the "RESULTS TO EVALUATE" section.
+🚨 **COUNT VERIFICATION**: The evaluation array must contain exactly {{search_result_count}} entries (Results 0-{{search_result_count_minus_one}}).
+🚨 **NO SHORTCUTS**: Do not use "..." or skip any results. Each result requires a complete evaluation.
+🚨 **VALIDATION**: Before finishing, verify your "evaluations" array has {{search_result_count}} entries matching the {{search_result_count_minus_one}} input results.
+
 
 ## RELEVANCE EVALUATION FRAMEWORK
 
@@ -234,9 +267,9 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 
 {enhanced_evaluation_criteria}
 
-## OUTPUT FORMAT
+## OUTPUT FORMAT - MANDATORY STRUCTURE
 
-MAKE SURE TO Provide your evaluation in JSON format devinde below each item provided in the "RESULTS TO EVALUATE" section MUST have a "evaluations" in the OUTPUT FORMAT As defined below:
+**CRITICAL**: Your response must include exactly {{search_result_count}} evaluation entries in the "evaluations" array, one for each Result (0-{{search_result_count_minus_one}}).
 
 ```json
 {{{{
@@ -246,7 +279,7 @@ MAKE SURE TO Provide your evaluation in JSON format devinde below each item prov
     "exact_matches_found": 0,
     "partial_matches_found": 0,
     "inventory_considerations_applied": true
-  }}}}
+  }}}}  ← **IMPORTANT: COMMA HERE**
   "evaluations": [
     {{{{
       "result_index": 0,
@@ -264,7 +297,7 @@ MAKE SURE TO Provide your evaluation in JSON format devinde below each item prov
       "inventory_impact": "How inventory affected ranking within relevance tier",
       "customer_satisfaction_risk": "Low|Medium|High",
       "recommended_action": "Promote|Maintain|Demote|Remove"
-    }}}}...
+    }}}} ... [CONTINUE FOR ALL {{search_result_count}} RESULTS - DO NOT USE "..." IN ACTUAL RESPONSE]
   ],
   "ranking_summary": "Overall assessment of how inventory and relevance combined to create final ranking",
   "business_recommendations": [
@@ -292,10 +325,18 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 **SEARCH TYPE**: multiple_terms  
 **BUSINESS CONTEXT**: E-commerce multi-term search optimization for conversion and customer satisfaction
 
+
+## CRITICAL INSTRUCTION: COMPLETE EVALUATION REQUIRED
+
+🚨 **MANDATORY**: You MUST evaluate EVERY SINGLE result provided in the "RESULTS TO EVALUATE" section.
+🚨 **COUNT VERIFICATION**: The evaluation array must contain exactly {{search_result_count}} entries (Results 0-{{search_result_count_minus_one}}).
+🚨 **NO SHORTCUTS**: Do not use "..." or skip any results. Each result requires a complete evaluation.
+🚨 **VALIDATION**: Before finishing, verify your "evaluations" array has {{search_result_count}} entries matching the {{search_result_count_minus_one}} input results.
+
 ## RELEVANCE EVALUATION FRAMEWORK
 
-### 🎯 **HIGH RELEVANCE**
-**Multi-Term Match Criteria:**
+### 🎯 **HIGH RELEVANCE (Score: 9-10)**
+**Multi-Term Match Criteria (Prioritized Order):**
 - **All Key Terms Matched**: Product title/description contains all important terms from query
 - **Logical Relationship**: Terms relate to each other as expected (brand + part type, model + component)
 - **Primary Match**: Product directly serves the intent implied by the term combination
@@ -305,7 +346,7 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 - Search: "toyota brake pad" → Product: "Toyota Genuine Brake Pad Set" (ALL terms matched)
 - Search: "commercial refrigerator door" → Product: "Commercial Refrigerator Door Gasket" (ALL terms + context)
 
-### 🎯 **MEDIUM RELEVANCE**
+### 🎯 **MEDIUM RELEVANCE (Score: 6-8)**
 **Partial Multi-Term Match:**
 - **Most Terms Matched**: Contains majority of key terms but missing some
 - **Compatible/Related**: Product works with or relates to the searched combination
@@ -316,7 +357,7 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 - Search: "ford engine filter" → Product: "Ford Air Filter" (missing "engine" but contextually correct)
 - Search: "stainless steel bolt" → Product: "SS Hex Bolt" (SS = stainless steel synonym)
 
-### 🎯 **LOW RELEVANCE**
+### 🎯 **LOW RELEVANCE  (Score: 1-5)**
 **Weak Multi-Term Match:**
 - **Few Terms Matched**: Only matches one or two terms with no logical connection
 - **Different Context**: Terms exist but in unrelated context
@@ -327,9 +368,9 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 
 {enhanced_evaluation_criteria}
 
-## OUTPUT FORMAT
+## OUTPUT FORMATMANDATORY STRUCTURE
 
-MAKE SURE TO Provide your evaluation in JSON format devinde below each item provided in the "RESULTS TO EVALUATE" section MUST have a "evaluations" in the OUTPUT FORMAT As defined below:
+**CRITICAL**: Your response must include exactly {{search_result_count}} evaluation entries in the "evaluations" array, one for each Result (0-{{search_result_count_minus_one}}).
 
 ```json
 {{{{
@@ -340,7 +381,7 @@ MAKE SURE TO Provide your evaluation in JSON format devinde below each item prov
     "full_matches_found": 0,
     "partial_matches_found": 0,
     "inventory_considerations_applied": true
-  }}}}
+  }}}}  ← **IMPORTANT: COMMA HERE**
   "evaluations": [
     {{{{
       "result_index": 0,
@@ -358,14 +399,14 @@ MAKE SURE TO Provide your evaluation in JSON format devinde below each item prov
       "inventory_impact": "How inventory affected ranking within relevance tier",
       "business_impact": "Excellent|Good|Fair|Poor",
       "recommended_action": "Promote|Maintain|Demote|Remove"
-    }}}}...
+    }}}}... [CONTINUE FOR ALL {{search_result_count}} RESULTS - DO NOT USE "..." IN ACTUAL RESPONSE]
   ],
   "ranking_summary": "Overall assessment of multi-term matching quality and inventory impact",
   "business_recommendations": [
     "Specific suggestions for improving multi-term search results"
   ],
-  "quality_score": "1-10",
-  "conversion_likelihood": "High|Medium|Low"
+  "quality_score": "Overall search result quality (1-10)",
+  "conversion_likelihood": "High|Medium|Low based on result relevance and availability"
 }}}}
 ```
 
@@ -540,8 +581,311 @@ def query_ollama(prompt: str, model: str = DEFAULT_MODEL, api_endpoint: str = OL
     
     return {"error": f"Failed after {max_retries} attempts"}
 
+
+def fix_common_json_issues(json_str: str) -> str:
+    """
+    Fix common JSON formatting issues in LLM responses
+    
+    Args:
+        json_str: Raw JSON string from LLM
+        
+    Returns:
+        Fixed JSON string
+    """
+    # Remove markdown code blocks
+    if "```json" in json_str:
+        start_marker = "```json"
+        end_marker = "```"
+        start_idx = json_str.find(start_marker)
+        if start_idx != -1:
+            start_idx += len(start_marker)
+            end_idx = json_str.find(end_marker, start_idx)
+            if end_idx != -1:
+                json_str = json_str[start_idx:end_idx].strip()
+    
+    # Fix missing commas between JSON objects/arrays
+    # Pattern: }\n  "key" -> },\n  "key"
+    json_str = re.sub(r'}\s*\n\s*"', '},\n  "', json_str)
+    json_str = re.sub(r']\s*\n\s*"', '],\n  "', json_str)
+    
+    # Fix missing commas in search_analysis section specifically
+    # Pattern: }\n  "evaluations" -> },\n  "evaluations"
+    json_str = re.sub(r'(\s*true\s*)\n(\s*}\s*)\n(\s*"evaluations")', r'\1\2,\3', json_str)
+    json_str = re.sub(r'(\s*false\s*)\n(\s*}\s*)\n(\s*"evaluations")', r'\1\2,\3', json_str)
+    json_str = re.sub(r'(\s*\d+\s*)\n(\s*}\s*)\n(\s*"evaluations")', r'\1\2,\3', json_str)
+    
+    # Fix trailing commas before closing braces/brackets
+    json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)
+    
+    # Fix unescaped quotes in string values
+    # This is tricky, so we'll be conservative and only fix obvious cases
+    json_str = re.sub(r':\s*"([^"]*)"([^",}\]]*)"([^",}\]]*)"', r': "\1\2\3"', json_str)
+    
+    # Fix single quotes to double quotes (but be careful not to break contractions)
+    json_str = re.sub(r"'([^']*)':", r'"\1":', json_str)
+    
+    return json_str.strip()
+
+def extract_json_from_response(response_text: str) -> Optional[str]:
+    """
+    Extract JSON from LLM response text
+    
+    Args:
+        response_text: Full LLM response
+        
+    Returns:
+        Extracted JSON string or None
+    """
+    # Try to find JSON block with various patterns
+    json_patterns = [
+        # Pattern 1: JSON in code blocks
+        r'```json\s*(.*?)\s*```',
+        # Pattern 2: JSON starting with { and ending with }
+        r'({[\s\S]*?})\s*$',
+        # Pattern 3: JSON anywhere in the text
+        r'({[\s\S]*?"evaluations"[\s\S]*?})',
+        # Pattern 4: Just look for opening brace to end of string
+        r'({[\s\S]*)'
+    ]
+    
+    for pattern in json_patterns:
+        match = re.search(pattern, response_text, re.DOTALL | re.MULTILINE)
+        if match:
+            potential_json = match.group(1).strip()
+            # Basic validation - should start with { and end with }
+            if potential_json.startswith('{') and potential_json.endswith('}'):
+                return potential_json
+    
+    return None
+
+def parse_enhanced_llm_response_improved(response: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """
+    Improved parsing of enhanced LLM response with better error handling
+    
+    Args:
+        response: Raw response from Ollama API
+        
+    Returns:
+        Parsed evaluation data or None if parsing failed
+    """
+    if "error" in response:
+        print(f"Error in LLM response: {response['error']}")
+        return None
+    
+    try:
+        generated_text = response.get("response", "")
+        print(f"📝 Raw LLM response length: {len(generated_text)} characters")
+        
+        # Step 1: Extract JSON from response
+        json_str = extract_json_from_response(generated_text)
+        if not json_str:
+            print("❌ Could not extract JSON from response")
+            print(f"Response preview: {generated_text[:500]}...")
+            return fallback_manual_extraction(generated_text)
+        
+        print(f"✅ Extracted JSON ({len(json_str)} chars)")
+        
+        # Step 2: Fix common JSON issues
+        fixed_json = fix_common_json_issues(json_str)
+        print(f"🔧 Applied JSON fixes")
+        
+        # Step 3: Try to parse JSON
+        try:
+            parsed_data = json.loads(fixed_json)
+            
+            # Step 4: Validate structure
+            if validate_evaluation_structure(parsed_data):
+                print(f"✅ Successfully parsed evaluation with {len(parsed_data.get('evaluations', []))} evaluations")
+                return parsed_data
+            else:
+                print("⚠️ Parsed JSON but structure validation failed")
+                return fallback_manual_extraction(generated_text)
+                
+        except json.JSONDecodeError as e:
+            print(f"❌ JSON parsing failed even after fixes: {e}")
+            print(f"Problematic JSON preview: {fixed_json[:300]}...")
+            
+            # Try one more aggressive fix
+            aggressive_fix = aggressive_json_repair(fixed_json)
+            try:
+                parsed_data = json.loads(aggressive_fix)
+                if validate_evaluation_structure(parsed_data):
+                    print(f"✅ Successfully parsed after aggressive repair")
+                    return parsed_data
+            except:
+                pass
+            
+            return fallback_manual_extraction(generated_text)
+    
+    except Exception as e:
+        print(f"Unexpected error in parsing: {e}")
+        return fallback_manual_extraction(response.get("response", ""))
+
+def aggressive_json_repair(json_str: str) -> str:
+    """
+    Apply aggressive fixes to malformed JSON
+    
+    Args:
+        json_str: Malformed JSON string
+        
+    Returns:
+        Repaired JSON string
+    """
+    # Fix common LLM JSON issues
+    
+    # 1. Add missing commas after closing braces/brackets when followed by quotes
+    json_str = re.sub(r'}\s*\n\s*"', '},\n"', json_str)
+    json_str = re.sub(r']\s*\n\s*"', '],\n"', json_str)
+    
+    # 2. Fix the specific search_analysis missing comma issue
+    json_str = re.sub(r'(true|false|\d+)\s*\n\s*}\s*\n\s*"evaluations"', r'\1\n  },\n  "evaluations"', json_str)
+    
+    # 3. Ensure proper comma placement in arrays
+    json_str = re.sub(r'}\s*\n\s*{', '},\n    {', json_str)
+    
+    # 4. Fix quote escaping issues
+    json_str = json_str.replace('\\"', '"').replace("'", '"')
+    
+    # 5. Remove any trailing content after the last }
+    last_brace = json_str.rfind('}')
+    if last_brace != -1:
+        json_str = json_str[:last_brace + 1]
+    
+    return json_str
+
+def validate_evaluation_structure(data: Dict[str, Any]) -> bool:
+    """
+    Validate that the parsed data has the expected evaluation structure
+    
+    Args:
+        data: Parsed JSON data
+        
+    Returns:
+        True if structure is valid, False otherwise
+    """
+    try:
+        # Check for required top-level keys
+        required_keys = ["evaluations"]
+        for key in required_keys:
+            if key not in data:
+                print(f"Missing required key: {key}")
+                return False
+        
+        # Check evaluations array
+        evaluations = data.get("evaluations", [])
+        if not isinstance(evaluations, list):
+            print("evaluations is not a list")
+            return False
+        
+        if len(evaluations) == 0:
+            print("evaluations array is empty")
+            return False
+        
+        # Check each evaluation entry
+        required_eval_keys = ["result_index", "relevance_tier", "justification"]
+        for i, evaluation in enumerate(evaluations):
+            if not isinstance(evaluation, dict):
+                print(f"Evaluation {i} is not a dictionary")
+                return False
+            
+            for key in required_eval_keys:
+                if key not in evaluation:
+                    print(f"Evaluation {i} missing required key: {key}")
+                    return False
+        
+        print(f"✅ Structure validation passed for {len(evaluations)} evaluations")
+        return True
+        
+    except Exception as e:
+        print(f"Error in structure validation: {e}")
+        return False
+
+def fallback_manual_extraction(text: str) -> Optional[Dict[str, Any]]:
+    """
+    Fallback manual extraction when JSON parsing completely fails
+    
+    Args:
+        text: Raw LLM response text
+        
+    Returns:
+        Manually extracted evaluation data
+    """
+    print("🔧 Attempting fallback manual extraction...")
+    
+    try:
+        evaluations = []
+        
+        # Look for result_index patterns
+        result_patterns = [
+            r'"result_index":\s*(\d+)',
+            r'result_index.*?(\d+)',
+        ]
+        
+        relevance_patterns = [
+            r'"relevance_tier":\s*"(High|Medium|Low)"',
+            r'relevance.*?(High|Medium|Low)',
+        ]
+        
+        justification_patterns = [
+            r'"justification":\s*"([^"]+)"',
+            r'justification.*?"([^"]+)"',
+        ]
+        
+        # Extract all matches
+        result_indices = []
+        for pattern in result_patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE)
+            result_indices.extend([int(m) for m in matches])
+        
+        relevances = []
+        for pattern in relevance_patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE)
+            relevances.extend(matches)
+        
+        justifications = []
+        for pattern in justification_patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE | re.DOTALL)
+            justifications.extend([m.strip() for m in matches])
+        
+        # Create evaluations from extracted data
+        max_results = max(len(result_indices), len(relevances), len(justifications)) if any([result_indices, relevances, justifications]) else 0
+        
+        # Remove duplicates while preserving order
+        seen_indices = set()
+        unique_indices = []
+        for idx in result_indices:
+            if idx not in seen_indices:
+                unique_indices.append(idx)
+                seen_indices.add(idx)
+        
+        # Create evaluation entries
+        for i in range(min(len(unique_indices), len(relevances), len(justifications))):
+            evaluation = {
+                "result_index": unique_indices[i],
+                "relevance_tier": relevances[i] if i < len(relevances) else "Medium",
+                "justification": justifications[i] if i < len(justifications) else f"Manual extraction for result {i}",
+                "inventory_status": "Unknown",
+                "inventory_quantity": "N/A",
+                "inventory_impact": "N/A"
+            }
+            evaluations.append(evaluation)
+        
+        if evaluations:
+            print(f"✅ Manual extraction successful: {len(evaluations)} evaluations")
+            return {
+                "evaluations": evaluations,
+                "ranking_summary": "Manually extracted due to JSON parsing issues"
+            }
+        else:
+            print("❌ Manual extraction also failed")
+            return None
+            
+    except Exception as e:
+        print(f"Manual extraction error: {e}")
+        return None
+    
 # --- Enhanced LLM Response Parsing ---
-def parse_enhanced_llm_response(response: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def parse_enhanced_llm_response_old(response: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
     Parses the enhanced LLM response including inventory considerations.
     Enhanced to handle various JSON formatting issues.
@@ -748,7 +1092,7 @@ def evaluate_search_results_with_inventory(query: str, results: List[Dict[str, s
     results_text = format_results_for_enhanced_prompt(results)
     
     # Fill in the prompt template
-    prompt = prompt_template.format(query=query, results_text=results_text)
+    prompt = prompt_template.format(query=query, results_text=results_text, search_result_count=len(results), search_result_count_minus_one=len(results)-1)
     
     # Create a safe filename with date-time
     debug_dir = "llm_debug"
@@ -765,7 +1109,7 @@ def evaluate_search_results_with_inventory(query: str, results: List[Dict[str, s
     llm_response = query_ollama(prompt, model, api_endpoint, timeout, max_retries)
     
     # Parse the enhanced response
-    parsed_evaluations = parse_enhanced_llm_response(llm_response)
+    parsed_evaluations = parse_enhanced_llm_response_improved(llm_response)
     
     # Save prompt, llm_response, and parsed evaluations for debugging
     
@@ -842,7 +1186,7 @@ def validate_prompt_template(template: str, search_type: str) -> Dict[str, Any]:
     }
     
     # Check for required placeholders
-    required_placeholders = ["{query}", "{results_text}"]
+    required_placeholders = ["{query}", "{results_text}", "{search_result_count}", "{search_result_count_minus_one}"]
     for placeholder in required_placeholders:
         if placeholder not in template:
             validation_result["errors"].append(f"Missing required placeholder: {placeholder}")
@@ -1007,6 +1351,10 @@ def test_enhanced_evaluation(model: str = DEFAULT_MODEL) -> None:
             print(f"Error: {evaluation_result.get('error', 'Unknown error')}")
 
 if __name__ == "__main__":
+
+    # Run the test prompt generation
+    print("Testing prompt generation and validation...")
+    test_prompt_generation()    
     # Check if Ollama is running
     try:
         response = requests.get("http://localhost:11434/api/tags", timeout=5)
