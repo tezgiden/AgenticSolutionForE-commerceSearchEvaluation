@@ -17,6 +17,8 @@ class ScrapingConfig:
     product_sku_selectors: List[str]
     product_price_selectors: List[str]
     product_quantity_selectors: List[str]
+    badges_selectors: List[str]
+    exact_match_selectors: List[str]
     no_results_selectors: List[str]
     max_results_per_query: int
     wait_timeout: int
@@ -134,6 +136,8 @@ class ConfigLoader:
             product_sku_selectors=scraping_data["product_sku_selectors"],
             product_price_selectors=scraping_data["product_price_selectors"],
             product_quantity_selectors=scraping_data["product_quantity_selectors"],
+            badges_selectors=scraping_data.get("badges_selectors", []),
+            exact_match_selectors=scraping_data.get("exact_match_selectors", []),
             no_results_selectors=scraping_data["no_results_selectors"],
             max_results_per_query=scraping_data["max_results_per_query"],
             wait_timeout=scraping_data["wait_timeout"],

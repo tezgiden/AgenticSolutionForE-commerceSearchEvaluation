@@ -490,15 +490,22 @@ def run_configurable_agentic_search(config: AppConfig) -> None:
                 "environment": config.deployment_config.environment
             }
         }
+        
+        # Ensure analysis_result directory exists
+        output_dir = "analysis_result"
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            print(f"[DEBUG] Created directory: {output_dir}")
+
         now = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = f"{config.site_config.output_config.output_file}_{now}.json"
+        output_file = os.path.join(output_dir, f"{config.site_config.output_config.output_file}_{now}.json")
         with open(output_file, "w") as f:
             json.dump(final_output, f, indent=4)
         print(f"\nFinal results saved to {output_file}")
-        
+
         # Save detailed analysis if enabled
         if config.evaluation_config.enable_detailed_analysis and detailed_analysis:
-            detailed_file = f"{config.site_config.output_config.detailed_output_file}_{now}.json"
+            detailed_file = os.path.join(output_dir, f"{config.site_config.output_config.detailed_output_file}_{now}.json")
             with open(detailed_file, "w") as f:
                 json.dump({
                     "detailed_analysis": detailed_analysis,

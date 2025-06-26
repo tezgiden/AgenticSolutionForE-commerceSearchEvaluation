@@ -372,8 +372,11 @@ def extract_product_data_enhanced(card_element, card_index: int, scraping_config
         "url": "N/A",
         "price": "N/A",
         "quantity": "N/A",
-        "description": "N/A"
-    }
+        "description": "N/A",
+        "partial_match": False,
+        "cross_ref_match": False,
+        "exact_match": False
+      }
     
     if debug:
         debug_product_structure(None, card_element, card_index)
@@ -556,6 +559,42 @@ def extract_product_data_enhanced(card_element, card_index: int, scraping_config
     except Exception as e:
         print(f"Error extracting quantity for product {card_index}: {e}")
     
+    try:# Initialize match flags
+        product_data["partial_match"] = False
+        product_data["cross_ref_match"] = False
+        for badge_selector in scraping_config.badges_selectors:
+            try:
+                badge_elements = card_element.find_elements(By.CSS_SELECTOR, badge_selector)
+                for badge in badge_elements:
+                    text = badge.text.strip().lower()
+                    print(f"[DEBUG] Found badge text: '{text}'")
+                    # Check for specific badge texts    
+                    if text == "partial match":
+                        product_data["partial_match"] = True
+                    elif text == "cross ref match":
+                        product_data["cross_ref_match"] = True
+            except NoSuchElementException:
+                pass
+    except Exception as e:
+        print(f"Error extracting Badges for product {card_index}: {e}")
+
+    try:# Initialize exact match flag
+        product_data["exact_match"] = False
+        for badge_selector in scraping_config.exact_match_selectors:
+            try:
+                badge_elements = card_element.find_elements(By.CSS_SELECTOR, badge_selector)
+                for badge in badge_elements:
+                    text = badge.text.strip().lower()
+                    print(f"[DEBUG] Found badge text: '{text}'")
+                    # Check for specific badge texts    
+                    if text == "exact match":
+                        product_data["exact_match"] = True
+            except NoSuchElementException:
+                pass
+    except Exception as e:
+        print(f"Error extracting exact match flag for product {card_index}: {e}")
+
+
     return product_data
 
 def clean_sku_text(part_number: str):
@@ -1224,6 +1263,12 @@ def scrape_tundra(driver, search_term: str) -> List[Dict[str, Any]]:
             "div.message-alert.info.p-3.message-no-item-alert",
             "div.message-no-item-alert",
             "div.message-alert"
+        ],
+        badges_selectors=[
+             "ul.product-badges li div.badges.partial-match span"
+        ],
+        exact_match_selectors  =[
+            "ul.product-badges li div.badges.exact-match span"
         ],
         max_results_per_query=10,
         wait_timeout=10,

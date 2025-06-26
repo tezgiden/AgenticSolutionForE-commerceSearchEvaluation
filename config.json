@@ -4,54 +4,9 @@
       "site_name": "TruckPro",
       "target_url": "https://www.truckpro.com/",
       "search_tasks": [
-        {"query": "4707Q"}        
+        {"query":"308925-25"}    
       ],
-      "inventory_test_cases": [
-        {"query": "4707Q"} ,
-        {"query": "armada 4707q"},
-        {"query": "BK4707"},
-        {"query": "B7177"},
-        {"query": "BK4515"},
-        {"query": "VS17573T"},
-        {"query": "gunite 1140"},
-        {"query": "truck-lite"},
-        {"query": "truck lite"},
-        {"query": "trucklite"},
-        {"query": "air drier"},
-        {"query": "air dryer"},
-        {"query": "TQ16010"},
-        {"query": "HFK-3539"},
-        {"query": "Vent, Axle, Tire Inflation, Intraax/Vantraax"},
-        {"query": "Armada Battery"},
-        {"query": "K-2924"},
-        {"query": "K2924"},
-        {"query": "308925-25"},
-        {"query": "gladhand seals"},
-        {"query": "Brake Drum"},
-        {"query": "brake chamber"},
-        {"query": "Wheel nut"},
-        {"query": "air spring"},    
-        {"query": "air springs"},
-        {"query": "brake shoes"},
-        {"query": "brake shoe"},
-        {"query": "brake pads"},
-        {"query": "brake pad"},
-        {"query": "wheel seal"},
-        {"query": "wheel seals"},
-        {"query": "wheel bearing"},
-        {"query": "wheel bearings"},
-        {"query": "hub cap"},
-        {"query": "hubcaps"},
-        {"query": "fuel filter"},
-        {"query": "oil filter"},
-        {"query": "air filter"},
-        {"query": "spark plugs"},
-        {"query": "battery"},
-        {"query": "alternator"},
-        {"query": "starter"},
-        {"query": "radiator"},
-        {"query": "transmission fluid"},
-        {"query": "brake fluid"}
+      "inventory_test_cases": [        
       ],
       "scraping_config": {
         "search_input_selectors": [
@@ -83,6 +38,12 @@
           "div.message-alert.info.p-3.message-no-item-alert",
           "div.message-no-item-alert",
           "div.message-alert"
+        ],
+        "badges_selectors": [
+          "ul.product-badges li div.badges.partial-match span"
+        ],
+        "exact_match_selectors": [
+          "ul.product-badges li div.badges.exact-match span"
         ],
         "max_results_per_query": 10,
         "wait_timeout": 10,
@@ -141,6 +102,12 @@
           "p.no-products-found",
           "div.empty-results"
         ],
+        "badges_selectors": [
+          "ul.product-badges li div.badges.partial-match span"
+        ],
+        "exact_match_selectors": [
+          "ul.product-badges li div.badges.exact-match span"
+        ],
         "max_results_per_query": 15,
         "wait_timeout": 15,
         "page_load_timeout": 45
@@ -196,6 +163,12 @@
           "div[data-testid=\"no-results\"]",
           "div.no-products",
           "p.empty-state"
+        ],
+        "badges_selectors": [
+          "ul.product-badges li div.badges.partial-match span"
+        ],
+        "exact_match_selectors": [
+          "ul.product-badges li div.badges.exact-match span"
         ],
         "max_results_per_query": 12,
         "wait_timeout": 8,

@@ -145,13 +145,14 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 🚨 **COUNT VERIFICATION**: The evaluation array must contain exactly {{search_result_count}} entries (Results 0-{{search_result_count_minus_one}}).
 🚨 **NO SHORTCUTS**: Do not use "..." or skip any results. Each result requires a complete evaluation.
 🚨 **VALIDATION**: Before finishing, verify your "evaluations" array has {{search_result_count}} entries matching the {{search_result_count}} input results.
+🚨 **BUSINESS SUMMARY**: business_recommendations section must be populated with summary of findings and actions as described in the JSON definiton
 
 
 
 ## RELEVANCE EVALUATION FRAMEWORK
 
 ### 🎯 **HIGH RELEVANCE (Score: 9-10)**
-- **Direct Product Match**: Product directly matches the search term (e.g., searching "gasket" returns gaskets)
+- **Direct Product Match**: Product directly matches the search term (e.g., searching "gasket" returns gaskets).
 - **Primary Function**: Product's main purpose aligns with search term
 - **Category Match**: Product belongs to the exact category implied by search term
 
@@ -240,10 +241,11 @@ Before finishing: Count your evaluations = {{search_result_count}}
 
 ### 🎯 **HIGH RELEVANCE (Score: 9-10)**
 **Exact Match Criteria (Prioritized Order):**
-1. **Primary Part Number**: Complete character-for-character match in 'Part Number' field
-2. **Vendor Part Number**: Complete character-for-character match in 'Vendor Part Number' field  
-3. **Manufacturer Part Number**: Complete character-for-character match in manufacturer-specific fields
-4. **Title Exact Match**: Query appears as standalone complete part number in product title
+1. **exact_match=Yes indicates an Exact Match for the search term. This product MUST BE the First one in the search results.      
+2. **Primary Part Number**: Complete character-for-character match in 'Part Number' field
+3. **Vendor Part Number**: Complete character-for-character match in 'Vendor Part Number' field  
+4. **Manufacturer Part Number**: Complete character-for-character match in manufacturer-specific fields
+5. **Title Exact Match**: Query appears as standalone complete part number in product title
 
 **Examples:**
 - ✅ Search: "4707Q" → Part Number: "4707Q" (EXACT)
@@ -252,11 +254,12 @@ Before finishing: Count your evaluations = {{search_result_count}}
 
 ### 🎯 **MEDIUM RELEVANCE (Score: 6-8)**
 **Partial Match Criteria:**
-1. **Substring Match**: Query is contained within part number (e.g., "4707Q" in "SDNS-4707Q")
-2. **Reverse Substring**: Part number is contained within query (longer query, shorter part)
-3. **Cross-Reference Match**: Explicitly labeled as "Compatible with", "Replaces", "Alternative for"
-4. **Model/Series Match**: Part of same product series or model family
-5. **Functional Equivalent**: Same function but different manufacturer designation
+1. **cross_ref_match=Yes or partial_match=Yes indicates a Partial Match to the serch term.
+2. **Substring Match**: Query is contained within part number (e.g., "4707Q" in "SDNS-4707Q")
+3. **Reverse Substring**: Part number is contained within query (longer query, shorter part)
+4. **Cross-Reference Match**: Explicitly labeled as "Compatible with", "Replaces", "Alternative for"
+5. **Model/Series Match**: Part of same product series or model family
+Functional Equivalent**: Same function but different manufacturer designation
 
 
 ### 🎯 **LOW RELEVANCE (Score: 1-5)**
@@ -303,11 +306,19 @@ Before finishing: Count your evaluations = {{search_result_count}}
     }}}} ... [CONTINUE FOR ALL {{search_result_count}} RESULTS - DO NOT USE "..." IN ACTUAL RESPONSE]
   ],
   "ranking_summary": "Overall assessment of how inventory and relevance combined to create final ranking",
-  "business_recommendations": [
-    "Specific actionable insights for improving search results",
-    "Inventory management suggestions",
-    "Customer experience improvements"
-  ],
+  "business_recommendations": {{{{
+      "relevancy_assessment": "High|Medium|Low based on match quality and inventory. Having 1 exact match is a HIGH relevancy assessment.",
+      "inventory_impact": "How inventory affected ranking within relevance tier. What are the percentages of No|LOW|MEDIUM|HIGH stock products?",
+      "customer_satisfaction_risk": "Low|Medium|High",
+      "key_insights": "Summary of key findings from evaluation",
+      "recommended_actions": {{{{
+      "promote": "Results to promote based on high relevance and stock",
+      "maintain": "Results to keep as-is",
+      "demote": "Results to lower in ranking due to low relevance or stock",
+      "remove": "Results to remove from search results due to poor relevance or stock",
+      :urgent_action: "Immediate actions needed to improve search results. For example if there is no Inventory for top 5-6 results, we need to review the products and ranking immedieatly."
+  }}}}
+  }}}},
   "quality_score": "Overall search result quality (1-10)",
   "conversion_likelihood": "High|Medium|Low based on result relevance and availability"
 }}}}
@@ -319,6 +330,7 @@ Response must be ONLY the JSON above
 Must contain exactly {{search_result_count}} evaluations (indices 0-{{search_result_count_minus_one}})
 No additional text before or after JSON
 Each justification: maximum 10 words
+Make sure that business_recommendations is provided and contains 2-3 sentences summarizing the overall assessment and recommendations.
 
 {critical_evaluation_guidelines}
 
@@ -451,7 +463,9 @@ def format_results_for_enhanced_prompt(results: List[Dict[str, str]]) -> str:
         formatted_text += f"Manufacturer Part Number: {result.get('manufacturer_part_number', 'N/A')}\n"
         formatted_text += f"Description: {result.get('description', 'N/A')}\n"
         formatted_text += f"Price: {result.get('price', 'N/A')}\n"
-        
+        formatted_text += f"exact_match: {result.get('exact_match', 'N/A')}\n"
+        formatted_text += f"partial_match: {result.get('partial_match', 'N/A')}\n"
+        formatted_text += f"cross_ref_match: {result.get('cross_ref_match', 'N/A')}\n"
         # Emphasize inventory information
         quantity = result.get('quantity', 'N/A')
         formatted_text += f"INVENTORY/QUANTITY: {quantity}\n"
