@@ -145,8 +145,6 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 🚨 **COUNT VERIFICATION**: The evaluation array must contain exactly {{search_result_count}} entries (Results 0-{{search_result_count_minus_one}}).
 🚨 **NO SHORTCUTS**: Do not use "..." or skip any results. Each result requires a complete evaluation.
 🚨 **VALIDATION**: Before finishing, verify your "evaluations" array has {{search_result_count}} entries matching the {{search_result_count}} input results.
-🚨 **BUSINESS SUMMARY**: business_recommendations section must be populated with summary of findings and actions as described in the JSON definiton
-
 
 
 ## RELEVANCE EVALUATION FRAMEWORK
@@ -198,10 +196,7 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
       "recommended_action": "Promote|Maintain|Demote|Remove"
     }}}}... [CONTINUE FOR ALL {{search_result_count}} RESULTS - DO NOT USE "..." IN ACTUAL RESPONSE]
   ],
-  "ranking_summary": "Overall assessment of search result quality and inventory impact",
-  "business_recommendations": [
-    "Specific suggestions for improving search results"
-  ],  
+  "ranking_summary": "Overall assessment of search result quality and inventory impact",    
   "quality_score": "Overall search result quality (1-10)",
   "conversion_likelihood": "High|Medium|Low based on result relevance and availability"
 }}}}
@@ -305,20 +300,7 @@ Functional Equivalent**: Same function but different manufacturer designation
       "recommended_action": "Promote|Maintain|Demote|Remove"
     }}}} ... [CONTINUE FOR ALL {{search_result_count}} RESULTS - DO NOT USE "..." IN ACTUAL RESPONSE]
   ],
-  "ranking_summary": "Overall assessment of how inventory and relevance combined to create final ranking",
-  "business_recommendations": {{{{
-      "relevancy_assessment": "High|Medium|Low based on match quality and inventory. Having 1 exact match is a HIGH relevancy assessment.",
-      "inventory_impact": "How inventory affected ranking within relevance tier. What are the percentages of No|LOW|MEDIUM|HIGH stock products?",
-      "customer_satisfaction_risk": "Low|Medium|High",
-      "key_insights": "Summary of key findings from evaluation",
-      "recommended_actions": {{{{
-      "promote": "Results to promote based on high relevance and stock",
-      "maintain": "Results to keep as-is",
-      "demote": "Results to lower in ranking due to low relevance or stock",
-      "remove": "Results to remove from search results due to poor relevance or stock",
-      :urgent_action: "Immediate actions needed to improve search results. For example if there is no Inventory for top 5-6 results, we need to review the products and ranking immedieatly."
-  }}}}
-  }}}},
+  "ranking_summary": "Overall assessment of how inventory and relevance combined to create final ranking",  
   "quality_score": "Overall search result quality (1-10)",
   "conversion_likelihood": "High|Medium|Low based on result relevance and availability"
 }}}}
@@ -330,7 +312,6 @@ Response must be ONLY the JSON above
 Must contain exactly {{search_result_count}} evaluations (indices 0-{{search_result_count_minus_one}})
 No additional text before or after JSON
 Each justification: maximum 10 words
-Make sure that business_recommendations is provided and contains 2-3 sentences summarizing the overall assessment and recommendations.
 
 {critical_evaluation_guidelines}
 
@@ -425,9 +406,6 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
     }}}}... [CONTINUE FOR ALL {{search_result_count}} RESULTS - DO NOT USE "..." IN ACTUAL RESPONSE]
   ],
   "ranking_summary": "Overall assessment of multi-term matching quality and inventory impact",
-  "business_recommendations": [
-    "Specific suggestions for improving multi-term search results"
-  ],
   "quality_score": "Overall search result quality (1-10)",
   "conversion_likelihood": "High|Medium|Low based on result relevance and availability"
 }}}}
@@ -1131,13 +1109,13 @@ def evaluate_search_results_with_inventory(query: str, results: List[Dict[str, s
 
     print(f"Prompt dumped to {filename}")
     # Query the LLM with configuration parameters
+    print("Step 1: Generating detailed search analysis...")
     llm_response = query_ollama(prompt, model, api_endpoint, timeout, max_retries)
     
     # Parse the enhanced response
     parsed_evaluations = parse_enhanced_llm_response_improved(llm_response)
     
-    # Save prompt, llm_response, and parsed evaluations for debugging
-    
+    # Save prompt, llm_response, and parsed evaluations for debugging    
     debug_file = os.path.join(debug_dir, f"llm_debug_data_{now}.json")
     try:
         with open(debug_file, "w", encoding="utf-8") as f:
@@ -1150,6 +1128,35 @@ def evaluate_search_results_with_inventory(query: str, results: List[Dict[str, s
         print(f"Failed to save debug data: {e}")
 
     if parsed_evaluations:
+        # Step 2: Generate executive summary prompt
+        print("Step 2: Generating executive summary...")
+        summary_prompt = generate_executive_summary_prompt(parsed_evaluations, query)
+        
+        # Step 3: Query LLM for executive summary
+        summary_response = query_ollama(summary_prompt, model, api_endpoint, timeout, max_retries)
+        
+        try:
+            debug_file = os.path.join(debug_dir, f"llm_executive_summary_{now}.json")
+            with open(debug_file, "w", encoding="utf-8") as f:
+                json.dump({
+                    "prompt": summary_prompt,
+                    "llm_response": summary_response,
+                    "parsed_evaluations": parsed_evaluations
+                }, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"Failed to save debug data: {e}")
+    
+        if not summary_response or 'response' not in summary_response:
+            raise ValueError("Invalid response from executive summary LLM query")
+        
+         # Parse executive summary JSON
+        executive_summary = parse_executive_summary_llm_response(summary_response)
+        if executive_summary:
+            print("✓ Executive summary generated and parsed successfully")
+            print(f"[DEBUG] Executive summary content:\n{json.dumps(executive_summary, indent=2, ensure_ascii=False)}")
+        else:
+            print("✗ Failed to parse executive summary")
+
         evaluations = parsed_evaluations.get("evaluations", [])
         
         # Apply post-processing for inventory-aware ranking if enabled
@@ -1164,7 +1171,8 @@ def evaluate_search_results_with_inventory(query: str, results: List[Dict[str, s
             "evaluations": evaluations,
             "ranking_summary": parsed_evaluations.get("ranking_summary", ""),
             "inventory_aware_ranking_applied": apply_post_ranking,
-            "status": "success"
+            "status": "success",
+            "executive_summary": executive_summary
         }
     else:
         return {
@@ -1176,6 +1184,162 @@ def evaluate_search_results_with_inventory(query: str, results: List[Dict[str, s
             "status": "error",
             "error": "Failed to parse LLM response"
         }
+
+def parse_executive_summary_llm_response(response: dict) -> Optional[dict]:
+    """
+    Parses the executive summary LLM response and validates its structure.
+    Args:
+        response: Raw response from Ollama API
+    Returns:
+        Parsed summary data or None if parsing failed
+    """
+    if "error" in response:
+        print(f"Error in LLM response: {response['error']}")
+        return None
+
+    try:
+        generated_text = response.get("response", "")
+        print(f"📝 Raw executive summary response length: {len(generated_text)} characters")
+
+        # Step 1: Extract JSON from response
+        json_str = extract_json_from_response(generated_text)
+        if not json_str:
+            print("❌ Could not extract JSON from executive summary response")
+            print(f"Response preview: {generated_text[:500]}...")
+            return None
+
+        print(f"✅ Extracted JSON ({len(json_str)} chars)")
+
+        # Step 2: Fix common JSON issues
+        fixed_json = fix_common_json_issues(json_str)
+        print(f"🔧 Applied JSON fixes")
+
+        # Step 3: Try to parse JSON
+        try:
+            parsed_data = json.loads(fixed_json)
+            # Step 4: Validate structure
+            if validate_executive_summary_structure(parsed_data):
+                print(f"✅ Successfully parsed executive summary")
+                return parsed_data
+            else:
+                print("⚠️ Executive summary structure validation failed")
+                return None
+        except json.JSONDecodeError as e:
+            print(f"❌ JSON parsing failed even after fixes: {e}")
+            print(f"Problematic JSON preview: {fixed_json[:300]}...")
+            return None
+
+    except Exception as e:
+        print(f"Unexpected error in executive summary parsing: {e}")
+        return None
+
+def validate_executive_summary_structure(data: dict) -> bool:
+    """
+    Validates that the parsed data has the expected executive summary structure.
+    Args:
+        data: Parsed JSON data
+    Returns:
+        True if structure is valid, False otherwise
+    """
+    try:
+        # Top-level keys
+        required_keys = ["business_recommendations", "quality_score", "conversion_likelihood"]
+        for key in required_keys:
+            if key not in data:
+                print(f"Missing required key in executive summary: {key}")
+                return False
+
+        # business_recommendations subkeys
+        br = data["business_recommendations"]
+        br_keys = [
+            "relevancy_assessment", "inventory_impact", "customer_satisfaction_risk",
+            "key_insights", "recommended_actions"
+        ]
+        for key in br_keys:
+            if key not in br:
+                print(f"Missing key in business_recommendations: {key}")
+                return False
+
+        # recommended_actions subkeys
+        ra = br["recommended_actions"]
+        ra_keys = ["promote", "maintain", "demote", "remove", "urgent_action"]
+        for key in ra_keys:
+            if key not in ra:
+                print(f"Missing key in recommended_actions: {key}")
+                return False
+
+        return True
+    except Exception as e:
+        print(f"Error in executive summary structure validation: {e}")
+        return False
+    
+def generate_executive_summary_prompt(initial_llm_response, query):
+    """
+    Generate a prompt for executive summary based on initial LLM response
+    """
+    prompt = f"""
+# Executive Summary Generation for E-commerce Search Analysis
+
+You are an expert e-commerce analyst tasked with creating a concise executive summary based on the search relevance analysis below.
+
+**SEARCH QUERY ANALYZED**: "{query}"
+**INITIAL ANALYSIS RESULTS**:
+{json.dumps(initial_llm_response, indent=2)}
+
+## INSTRUCTIONS
+
+Generate a comprehensive business recommendations summary in the EXACT JSON format specified below. Focus on:
+
+1. **Relevancy Assessment**: Evaluate overall match quality (High if exact matches exist, Medium for good partial matches, Low for poor matches)
+2. **Inventory Impact**: Analyze how stock levels affect customer experience and conversion
+3. **Customer Satisfaction Risk**: Assess potential frustration or dissatisfaction
+4. **Key Insights**: Highlight the most important findings
+5. **Recommended Actions**: Provide specific, actionable recommendations
+
+## REQUIRED OUTPUT FORMAT
+
+Your response must be ONLY valid JSON in this exact structure:
+
+```json
+{{
+  "business_recommendations": {{
+    "relevancy_assessment": "High|Medium|Low - Explain why based on match quality and inventory. Having 1+ exact matches = HIGH relevancy assessment.",
+    "inventory_impact": "Detailed analysis of how inventory affected ranking within relevance tiers. Include percentages of No Stock/Low Stock/Medium Stock/High Stock products and their impact on customer experience.",
+    "customer_satisfaction_risk": "Low|Medium|High - Based on result quality, availability, and likelihood of customer finding what they need.",
+    "key_insights": "2-3 bullet points summarizing the most critical findings from the evaluation that impact business performance.",
+    "recommended_actions": {{
+      "promote": "Specific results (by index or part number) to promote based on high relevance and good stock levels.",
+      "maintain": "Results that are performing adequately and should remain in current positions.",
+      "demote": "Results to lower in ranking due to low relevance, poor stock, or customer satisfaction risks.",
+      "remove": "Results that should be removed entirely due to very poor relevance or zero business value.",
+      "urgent_action": "Immediate critical actions needed to improve search performance, inventory management, or customer experience. Flag if top results have no inventory or poor relevance."
+    }}
+  }},
+  "quality_score": "1-10 overall search result quality score",
+  "conversion_likelihood": "High|Medium|Low based on result relevance, availability, and customer intent match"
+}}
+```
+
+## ANALYSIS GUIDELINES
+
+- **High Relevancy**: Exact matches found with good inventory
+- **Medium Relevancy**: Good partial matches or exact matches with poor inventory  
+- **Low Relevancy**: Only weak matches or category-level results
+- **Inventory Impact**: Consider how stock levels within each relevance tier affect final rankings
+- **Customer Risk**: High risk if top results are irrelevant or out of stock
+- **Actions**: Be specific about which results (by index) need attention
+
+## CRITICAL REQUIREMENTS
+
+1. Response must be ONLY the JSON structure above
+2. No additional text before or after the JSON
+3. All fields must be completed with specific, actionable content
+4. Reference specific result indices where applicable
+5. Provide clear business justification for all recommendations
+
+Generate the executive summary now:
+"""
+    return prompt
 
 # --- Backward Compatibility Function ---
 def evaluate_search_results(query: str, results: List[Dict[str, str]], 

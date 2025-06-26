@@ -107,8 +107,13 @@ def analyze_inventory_impact(evaluation_results: dict, original_results: list) -
         )
     
     return analysis
-
-def generate_business_summary(query: str, evaluation: dict, scraped_results: list, 
+# depricated
+# def generate_business_summary(query: str, evaluation: dict, scraped_results: list,
+#                               inventory_analysis: dict, config: AppConfig) -> dict:
+#     """
+#     We use the LLM to generate the business summary which is renmaned as executive summary.
+#     Generates a business-focused summary with relevancy assessment and product movement recommendations based on the static rules..
+def generate_static_business_summary(query: str, evaluation: dict, scraped_results: list, 
                             inventory_analysis: dict, config: AppConfig) -> dict:
     """
     Generates a business-focused summary with relevancy assessment and product movement recommendations.
@@ -370,7 +375,7 @@ def run_configurable_agentic_search(config: AppConfig) -> None:
                     "scraped_results": [],
                     "evaluation": None,
                     "inventory_analysis": None,
-                    "business_summary": None,
+                    "executive_summary": None,
                     "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
                 })
                 continue
@@ -432,7 +437,7 @@ def run_configurable_agentic_search(config: AppConfig) -> None:
 
             # 4. Generate Business Summary and Recommendations
             print("--- Step 4: Generating business summary and recommendations ---")
-            business_summary = generate_business_summary(query, evaluation, scraped_results, inventory_analysis, config)
+            executive_summary = evaluation.get("executive_summary", {})
 
             # Combine results
             final_result = {
@@ -442,7 +447,7 @@ def run_configurable_agentic_search(config: AppConfig) -> None:
                 "scraped_results": scraped_results,
                 "evaluation": evaluation.get("evaluations", []),
                 "inventory_analysis": inventory_analysis,
-                "business_summary": business_summary,
+                "executive_summary": executive_summary,
                 "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
             }
             
@@ -454,7 +459,7 @@ def run_configurable_agentic_search(config: AppConfig) -> None:
                     "query": query,
                     "search_type": search_type,
                     "inventory_analysis": inventory_analysis,
-                    "business_summary": business_summary,
+                    "executive_summary": executive_summary,
                     "evaluation_metadata": {
                         "model_used": evaluation.get("model_used"),
                         "inventory_aware_ranking_applied": evaluation.get("inventory_aware_ranking_applied", False),
