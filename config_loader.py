@@ -358,7 +358,7 @@ if __name__ == "__main__":
             # Test overrides
             print(f"\nTesting configuration overrides...")
             overridden_config = loader.override_config(site_key, {
-                "model": "llama3",
+                "model": "gemma3",
                 "max_results": 20,
                 "headless": False
             })

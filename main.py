@@ -327,12 +327,14 @@ def generate_overall_summary(all_results: list, config: AppConfig) -> dict:
     
     return overall
 
-def run_configurable_agentic_search(config: AppConfig) -> None:
+def run_configurable_agentic_search(config: AppConfig, scraped_results_file: str = None) -> None:
     """
     Runs the configurable end-to-end agentic search with inventory-aware evaluation.
+    If scraped_results_file is provided, loads scraped results from file for testing instead of scraping.
     
     Args:
         config: Complete application configuration
+        scraped_results_file: Optional path to a JSON file with pre-scraped results for testing
     """
     all_final_results = []
     detailed_analysis = []
@@ -346,11 +348,13 @@ def run_configurable_agentic_search(config: AppConfig) -> None:
     print(f"Model: {config.llm_config.default_model}")
     print(f"Inventory ranking: {'Enabled' if config.evaluation_config.enable_inventory_ranking else 'Disabled'}")
     
-    # Setup WebDriver with configuration
-    driver = setup_driver_with_config(config.chrome_config)
-    if not driver:
-        print("Failed to initialize WebDriver. Aborting.")
-        return
+    driver = None
+    if not scraped_results_file:
+        # Setup WebDriver with configuration only if not using pre-scraped results
+        driver = setup_driver_with_config(config.chrome_config)
+        if not driver:
+            print("Failed to initialize WebDriver. Aborting.")
+            return
 
     try:
         for task_idx, task in enumerate(all_search_tasks):
@@ -363,10 +367,35 @@ def run_configurable_agentic_search(config: AppConfig) -> None:
             print(f"Processing Query {task_idx + 1}/{len(all_search_tasks)}: '{query}'")
             print(f"{'='*70}")
 
-            # 1. Scrape Search Results with debug mode
+            # 1. Scrape Search Results with debug mode or load from file
             print("--- Step 1: Scraping website ---")
             debug_mode = config.deployment_config.environment == "development"
-            scraped_results = scrape_site_with_config(driver, query, config.site_config, debug_mode=debug_mode)
+            if scraped_results_file:
+                # Load scraped results from file for testing
+                with open(scraped_results_file, "r", encoding="utf-8") as f:
+                    all_scraped_results = json.load(f)
+                # all_scraped_results should be a list of dicts with 'query' and 'results'
+                # Find the results for the current query
+                scraped_results = None
+                for entry in all_scraped_results:
+                    if entry.get("query") == query:
+                        scraped_results = entry.get("results", [])
+                        break
+                if scraped_results is None:
+                    print(f"No pre-scraped results found for query '{query}'. Skipping evaluation.")
+                    all_final_results.append({
+                        "query": query,
+                        "status": "scraping_failed",
+                        "scraped_results": [],
+                        "evaluation": None,
+                        "inventory_analysis": None,
+                        "executive_summary": None,
+                        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+                    })
+                    continue
+            else:
+                scraped_results = scrape_site_with_config(driver, query, config.site_config, debug_mode=debug_mode)
+
             if not scraped_results:
                 print(f"No results found or error during scraping for '{query}'. Skipping evaluation.")
                 all_final_results.append({
@@ -467,8 +496,9 @@ def run_configurable_agentic_search(config: AppConfig) -> None:
                     }
                 })
             
-            # Delay between tasks
-            time.sleep(config.deployment_config.delay_between_searches)
+            # Delay between tasks (skip delay if using pre-scraped results)
+            if not scraped_results_file:
+                time.sleep(config.deployment_config.delay_between_searches)
 
     finally:
         # Ensure driver is closed
@@ -595,7 +625,7 @@ def main():
         print(f"Starting Enhanced Agentic Search Solution for {config.site_config.site_name}...")
         
         # Run the search
-        run_configurable_agentic_search(config)
+        run_configurable_agentic_search(config, scraped_results_file="llm_debug/scraped_test.json")
         
         print(f"\nEnhanced Agentic Search Solution finished for {config.site_config.site_name}.")
         print(f"Results saved to: {config.site_config.output_config.output_file}")

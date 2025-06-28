@@ -185,7 +185,7 @@
   "llm_config": {
     "ollama_api_endpoint": "http://localhost:11434/api/generate",
     "default_model": "gemma3",
-    "timeout": 600,
+    "timeout": 720,
     "max_retries": 3
   },
   "evaluation_config": {

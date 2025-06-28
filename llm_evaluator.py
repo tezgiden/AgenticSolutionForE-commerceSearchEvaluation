@@ -10,7 +10,7 @@ import os
 
 # --- Configuration ---
 OLLAMA_API_ENDPOINT = "http://localhost:11434/api/generate"
-DEFAULT_MODEL =  "llama3" #"gemma3"  # Change to your preferred model
+DEFAULT_MODEL =  "gemma3" #"gemma3"  # Change to your preferred model
 TIMEOUT = 600  # Seconds to wait for Ollama response
 MAX_RETRIES = 3  # Number of retries for API calls
 
@@ -66,7 +66,7 @@ def get_enhanced_prompt_template(search_type: str, initial_llm_response=None, Qu
 ### 📊 Inventory Status Classification
 - **Available**: >10 inventory_quantity in stock
 - **Low Stock**: 1-10 inventory_quantity in stock  
-- **Out of Stock**: If inventory_quantity = 0 or inventory_quantity = 'N/A' 
+- **Out of Stock**: If `inventory_quantity` = "N/A" or 0, `inventory_status` MUST be "Out of Stock" — NO EXCEPTIONS. 
 - **Unknown**:  Only used if inventory data field is literally absent or null or not parsable
 """
 
@@ -87,6 +87,13 @@ Consider:
 - **Customer Satisfaction**: Does this meet search expectations?
 - **Inventory Efficiency**: Does ranking optimize available stock?
 - **Brand Trust**: Does result quality maintain platform credibility?
+
+### recommended_action  scoring
+- "Promote" → High relevance + In Stock  
+- "Maintain" → Medium relevance or Low stock  
+- "Demote" → Low stock + Medium/Low relevance  
+- "Remove" → Out of Stock + Low relevance
+- "Urgent Action" → Critical issues like no stock or poor relevance
 """
 
     # Critical evaluation guidelines
@@ -100,7 +107,11 @@ Before submitting your response, verify:
 ✅ No "..." or incomplete entries
 ✅ "total_results" in search_analysis equals {search_result_count}
 ✅ Length of "evaluations" array equals {search_result_count}
-✅ If inventory_quantity is "N/A", then inventory_status must be "Out of Stock"
+✅ If inventory_quantity is "N/A" or 0, then inventory_status MUST BE "Out of Stock" NO EXCEPTIONS
+✅ Once you are done, review and validate the JSON structure before submitting. JSON MUST be valid and complete.
+✅ VALIDATION REMINDER: Ensure JSON output conforms to schema. Use a validator if needed. No trailing commas or extra fields.
+
+
 
 IMPORTANT REMINDERS
 
@@ -171,8 +182,10 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 
 ## OUTPUT FORMAT
 
-**CRITICAL**: Your response must include exactly {{search_result_count}} evaluation entries in the "evaluations" array, one for each Result (0-{{search_result_count_minus_one}}).
-
+**CRITICAL**: 
+- Your response must include exactly {{search_result_count}} evaluation entries in the "evaluations" array, one for each Result (0-{{search_result_count_minus_one}}).
+- Your response must include "ranking_summary", quality_score" and "conversion_likelihood" sections in the JSON
+- Validate the JSON structure before submitting.
 ```json
 {{{{
   "search_analysis": {{{{
@@ -180,7 +193,7 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
     "total_results": 0,
     "category_matches_found": 0,
     "inventory_considerations_applied": true
-  }}}}  ← **IMPORTANT: COMMA HERE**
+  }}}},  ← **IMPORTANT: COMMA HERE**
   "evaluations": [
     {{{{
       "result_index": 0,
@@ -188,7 +201,7 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
       "relevance_tier": "High|Medium|Low",
       "relevance_score": "1-10",
       "match_type": "Direct|Related|Category|Unrelated",
-      "inventory_status": "Available|Low Stock|Out of Stock|Unknown. Use the following strict rules:  - If inventory_quantity > 10 → Available     - If inventory_quantity between 1-10 → Low Stock     - If inventory_quantity = 0 or inventory_quantity = 'N/A' → Out of Stock    - If inventory_quantity is missing or unparseable → Unknown. If inventory_quantity is "N/A", then inventory_status MUST be "Out of Stock"—no exceptions.'",
+      "inventory_status": "Available|Low Stock|Out of Stock|Unknown. Use the following strict rules:  - If inventory_quantity > 10 → Available     - If inventory_quantity between 1-10 → Low Stock     - If inventory_quantity = 0 or inventory_quantity = 'N/A' → Out of Stock    - If inventory_quantity is missing or unparseable → Unknown. If inventory_quantity is "N/A" or 0, then inventory_status MUST be "Out of Stock"—NO EXCEPTIONS.'",
       "inventory_quantity": "actual number or N/A",
       "part_number": "actual part number or N/A",
       "vendor_part_number": "actual vendor part number or N/A",
@@ -282,7 +295,7 @@ Functional Equivalent**: Same function but different manufacturer designation
     "exact_matches_found": 0,
     "partial_matches_found": 0,
     "inventory_considerations_applied": true
-  }}}}  ← **IMPORTANT: COMMA HERE**
+  }}}},  ← **IMPORTANT: COMMA HERE**
   "evaluations": [
     {{{{
       "result_index": 0,
@@ -292,7 +305,7 @@ Functional Equivalent**: Same function but different manufacturer designation
       "match_type": "Exact|Partial|Cross-reference|Category|None",
       "match_location": "Part Number|Vendor Part Number|Title|Description|Multiple",
       "match_confidence": "Very High|High|Medium|Low|Very Low",
-      "inventory_status": "Available|Low Stock|Out of Stock|Unknown. Use the following strict rules:  - If inventory_quantity > 10 → Available     - If inventory_quantity between 1-10 → Low Stock     - If inventory_quantity = 0 or inventory_quantity = 'N/A' → Out of Stock    - If inventory_quantity is missing or unparseable → Unknown. If inventory_quantity is "N/A", then inventory_status MUST be "Out of Stock"—no exceptions.'",
+      "inventory_status": "Available|Low Stock|Out of Stock|Unknown. Use the following strict rules:  - If inventory_quantity > 10 → Available     - If inventory_quantity between 1-10 → Low Stock     - If inventory_quantity = 0 or inventory_quantity = 'N/A' → Out of Stock    - If inventory_quantity is missing or unparseable → Unknown. If inventory_quantity is "N/A" or 0, then inventory_status MUST be "Out of Stock"—NO EXCEPTIONS",
       "inventory_quantity": "actual number or N/A",
       "part_number": "actual part number or N/A",
       "vendor_part_number": "actual vendor part number or N/A",
@@ -333,13 +346,63 @@ You are an expert e-commerce product relevance analyst specializing in automotiv
 **BUSINESS CONTEXT**: E-commerce multi-term search optimization for conversion and customer satisfaction
 
 
+## OUTPUT FORMATMANDATORY STRUCTURE
+
+**CRITICAL**: 
+- Your response must include exactly {{search_result_count}} evaluation entries in the "evaluations" array, one for each Result (0-{{search_result_count_minus_one}}).
+- Your response must include "ranking_summary", quality_score" and "conversion_likelihood" sections in the JSON
+- Validate the JSON structure before submitting.
+- If a field is EMPTY or "N/A", treat it as MISSING. DO NOT ASSUME MEANING OR MATCH FROM IT.
+
+🧠 TIP: If you are truncating results or evaluations, STOP and retry with fewer tokens. DO NOT SKIP ENTRIES.
+
+
+
+```json
+{{{{
+  "search_analysis": {{{{
+    "query": "{{query}}",
+    "query_terms": ["term1", "term2", "term3"],
+    "total_results": 0,
+    "full_matches_found": 0,
+    "partial_matches_found": 0,
+    "inventory_considerations_applied": true
+  }}}},  ← **IMPORTANT: COMMA HERE**
+  "evaluations": [
+    {{{{
+      "result_index": 0,
+      "title": "Product Title",
+      "relevance_tier": "High|Medium|Low",
+      "relevance_score": "1-10",
+      "terms_matched": ["List only the query terms that matched any of: title, part_number, vendor_part_number, manufacturer_part_number"],
+      "terms_missing": ["missing_term1"],
+      "match_quality": "All Key Terms|Most Terms|Some Terms|Few Terms",
+      "contextual_accuracy": "Excellent|Good|Fair|Poor",
+      "inventory_status": "Available|Low Stock|Out of Stock|Unknown. Use the following strict rules:  - If inventory_quantity > 10 → Available     - If inventory_quantity between 1-10 → Low Stock     - If inventory_quantity = 0 or inventory_quantity = 'N/A' → Out of Stock    - If inventory_quantity is missing or unparseable → Unknown. If inventory_quantity is "N/A" or 0, then inventory_status MUST be "Out of Stock"—NO EXCEPTIONS'",
+      "inventory_quantity": "actual number or N/A",
+      "part_number": "actual part number or N/A",
+      "vendor_part_number": "actual vendor part number or N/A",
+      "justification": "Detailed explanation of which terms matched, context quality, and relevance reasoning. ",
+      "inventory_impact": "How inventory affected ranking within relevance tier",
+      "business_impact": "Excellent|Good|Fair|Poor",
+      "recommended_action": "Promote|Maintain|Demote|Remove|Urgent Action"
+    }}}}... [CONTINUE FOR ALL {{search_result_count}} RESULTS - DO NOT USE "..." IN ACTUAL RESPONSE]
+  ],
+  "ranking_summary": "Overall assessment of multi-term matching quality and inventory impact",
+  "quality_score": "Overall search result quality (1-10)",
+  "conversion_likelihood": "High|Medium|Low based on result relevance and availability"
+}}}} ← **IMPORTANT: MUST evaluate upto HERE. Make sure the JSON is VALID **
+```
+
 🚨 CRITICAL INSTRUCTIONS - READ CAREFULLY
 MANDATORY REQUIREMENTS:
 
-You MUST evaluate ALL {{search_result_count}} results (indices 0-{{search_result_count_minus_one}}) provided below
-Your response MUST be valid JSON format only - no additional text
-NO shortcuts, ellipsis (...), or incomplete entries allowed
-Each evaluation must include ALL required fields
+🚨 You MUST evaluate ALL {{search_result_count}} results (indices 0-{{search_result_count_minus_one}}) provided below
+🚨 Your response MUST be valid JSON format only - no additional text
+🚨 NO shortcuts, ellipsis (...), or incomplete entries allowed
+🚨 Each evaluation must include ALL required fields
+🚨 IMPORTANT: If `inventory_quantity` = "N/A" or 0, `inventory_status` MUST be "Out of Stock" — NO EXCEPTIONS.
+
 
 COUNT VERIFICATION:
 
@@ -365,7 +428,7 @@ Before finishing: Count your evaluations = {{search_result_count}}
 ### 🎯 **MEDIUM RELEVANCE (Score: 6-8)**
 **Partial Match Criteria:**
 1. **cross_ref_match=Yes or partial_match=Yes indicates a Partial Match to the serch term.
-2. **Substring Match**: Query is contained within part number (e.g., "4707Q" in "SDNS-4707Q")
+2. **Substring Match**: Query is contained within part number (e.g., "4707Q" in "SDNS-4707Q" or "4707Q-AK" in "Armada Brake pad WWAK4707Q-AK12")
 3. **Reverse Substring**: Part number is contained within query (longer query, shorter part)
 4. **Cross-Reference Match**: Explicitly labeled as "Compatible with", "Replaces", "Alternative for"
 5. **Model/Series Match**: Part of same product series or model family
@@ -387,55 +450,60 @@ Before finishing: Count your evaluations = {{search_result_count}}
 
 {enhanced_evaluation_criteria}
 
-## OUTPUT FORMATMANDATORY STRUCTURE
-
-**CRITICAL**: Your response must include exactly {{search_result_count}} evaluation entries in the "evaluations" array, one for each Result (0-{{search_result_count_minus_one}}).
-
-```json
-{{{{
-  "search_analysis": {{{{
-    "query": "{{query}}",
-    "query_terms": ["term1", "term2", "term3"],
-    "total_results": 0,
-    "full_matches_found": 0,
-    "partial_matches_found": 0,
-    "inventory_considerations_applied": true
-  }}}}  ← **IMPORTANT: COMMA HERE**
-  "evaluations": [
-    {{{{
-      "result_index": 0,
-      "title": "Product Title",
-      "relevance_tier": "High|Medium|Low",
-      "relevance_score": "1-10",
-      "terms_matched": ["matched_term1", "matched_term2"],
-      "terms_missing": ["missing_term1"],
-      "match_quality": "All Key Terms|Most Terms|Some Terms|Few Terms",
-      "contextual_accuracy": "Excellent|Good|Fair|Poor",
-      "inventory_status": "Available|Low Stock|Out of Stock|Unknown. Use the following strict rules:  - If inventory_quantity > 10 → Available     - If inventory_quantity between 1-10 → Low Stock     - If inventory_quantity = 0 or inventory_quantity = 'N/A' → Out of Stock    - If inventory_quantity is missing or unparseable → Unknown. If inventory_quantity is "N/A", then inventory_status MUST be "Out of Stock"—no exceptions.'",
-      "inventory_quantity": "actual number or N/A",
-      "part_number": "actual part number or N/A",
-      "vendor_part_number": "actual vendor part number or N/A",
-      "justification": "Detailed explanation of which terms matched, context quality, and relevance reasoning. ",
-      "inventory_impact": "How inventory affected ranking within relevance tier",
-      "business_impact": "Excellent|Good|Fair|Poor",
-      "recommended_action": "Promote|Maintain|Demote|Remove"
-    }}}}... [CONTINUE FOR ALL {{search_result_count}} RESULTS - DO NOT USE "..." IN ACTUAL RESPONSE]
-  ],
-  "ranking_summary": "Overall assessment of multi-term matching quality and inventory impact",
-  "quality_score": "Overall search result quality (1-10)",
-  "conversion_likelihood": "High|Medium|Low based on result relevance and availability"
-}}}}
-```
-
 
 FINAL REMINDER:
 
 Response must be ONLY the JSON above
-Must contain exactly {{search_result_count}} evaluations (indices 0-{{search_result_count_minus_one}})
+Must contain exactly {{search_result_count}} evaluations (indices 0-{{search_result_count_minus_one}}). Count evaluations array length = {{search_result_count}}
 No additional text before or after JSON
-Each justification: maximum 10 words
+Each justification: MUST be 20 words or less
 
 {critical_evaluation_guidelines}
+
+
+
+### HERE IS A SAMPLE OUTPUT:
+```json
+{{{{
+  "search_analysis":{{{{
+    "query": "armada 4707q",
+    "query_terms": ["armada", "4707q"],
+    "total_results": 10,
+    "full_matches_found": 0,
+    "partial_matches_found": 0,
+    "inventory_considerations_applied": true
+  }}}},
+  "evaluations": [
+    {{{{
+      "result_index": 0,
+      "title": "Armada Brake Shoe Kit New",
+      "relevance_tier": "High",
+      "relevance_score": "9",
+      "terms_matched": ["armada", "4707q"],
+      "terms_missing": [],
+      "match_quality": "All Key Terms",
+      "contextual_accuracy": "Excellent",
+      "inventory_status": "Available",
+      "inventory_quantity": "44",
+      "part_number": "NK4707QPAR2",
+      "vendor_part_number": "4707QPAR2",
+      "justification": "Both terms match exactly, strong title alignment.",
+      "inventory_impact": "Boosted due to high stock availability",
+      "business_impact": "Excellent",
+      "recommended_action": "Promote"
+    }}}},
+    {{{{
+      "result_index": 1,
+      "title": "Product Title",
+      ...
+    }}}}
+  ],
+  "ranking_summary": "Summarize ranking and inventory impact.",
+  "quality_score": "8",
+  "conversion_likelihood": "High"
+}}}}
+```
+
 
 **RESULTS TO EVALUATE:**
 {{results_text}}
@@ -768,9 +836,17 @@ def parse_enhanced_llm_response_improved(response: Dict[str, Any]) -> Optional[D
         return None
     
     try:
+
         generated_text = response.get("response", "")
         print(f"📝 Raw LLM response length: {len(generated_text)} characters")
         
+         # --- Remove ```json at the beginning and ``` at the end if present ---
+        if generated_text.strip().startswith("```json"):
+            generated_text = generated_text.strip()[7:]  # Remove the first 7 chars (```json)
+        if generated_text.strip().endswith("```"):
+            generated_text = generated_text.strip()
+            generated_text = generated_text[:-3]  # Remove the last 3 chars (```)
+
         # Step 1: Extract JSON from response
         json_str = extract_json_from_response(generated_text)
         if not json_str:
@@ -1366,77 +1442,6 @@ def validate_executive_summary_structure(data: dict) -> bool:
         print(f"Error in executive summary structure validation: {e}")
         return False
     
-def generate_executive_summary_prompt(initial_llm_response, query):
-    """
-    Generate a prompt for executive summary based on initial LLM response
-    """
-    prompt = f"""
-# Executive Summary Generation for E-commerce Search Analysis
-
-You are an expert e-commerce analyst tasked with creating a concise executive summary based on the search relevance analysis below.
-
-**SEARCH QUERY ANALYZED**: "{query}"
-**INITIAL ANALYSIS RESULTS**:
-{json.dumps(initial_llm_response, indent=2)}
-
-## INSTRUCTIONS
-
-Generate a comprehensive business recommendations summary in the EXACT JSON format specified below. Focus on:
-
-1. **Relevancy Assessment**: Evaluate overall match quality (High if exact matches exist, Medium for good partial matches, Low for poor matches)
-2. **Inventory Impact**: Analyze how stock levels affect customer experience and conversion. Quantiy 'N/A' means no stock, 'Low Stock' means limited availability, 'Medium Stock' means some availability, and 'High Stock' means good availability.
-3. **Customer Satisfaction Risk**: Assess potential frustration or dissatisfaction
-4. **Key Insights**: Highlight the most important findings
-5. **Recommended Actions**: Provide specific, actionable recommendations
-
-## REQUIRED OUTPUT FORMAT
-
-Your response must be ONLY valid JSON in this exact structure:
-
-```json
-{{
-  "business_recommendations": {{
-    "relevancy_assessment": "High|Medium|Low - Explain why based on match quality and inventory. Having 1+ exact matches = HIGH relevancy assessment.",
-    "inventory_impact": "Detailed analysis of how inventory affected ranking within relevance tiers. Include percentages of No Stock/Low Stock/Medium Stock/High Stock products and their impact on customer experience.",
-    "customer_satisfaction_risk": "Low|Medium|High - Based on result quality, availability, and likelihood of customer finding what they need.",
-    "key_insights": "2-3 bullet points summarizing the most critical findings from the evaluation that impact business performance.",
-    "recommended_actions": {{
-      "promote": "Specific results (by index or part number) to promote based on high relevance and good stock levels.",
-      "maintain": "Results that are performing adequately and should remain in current positions.",
-      "demote": "Results to lower in ranking due to low relevance, poor stock, or customer satisfaction risks.",
-      "remove": "Results that should be removed entirely due to very poor relevance or zero business value.",
-      "urgent_action": "Immediate critical actions needed to improve search performance, inventory management, or customer experience. Flag if top results have no inventory or poor relevance."
-    }}
-  }},
-  "quality_score": "1-10 overall search result quality score",
-  "conversion_likelihood": "High|Medium|Low based on result relevance, availability, and customer intent match"
-}}
-```
-{base_inventory_instruction}
-
-## BASE INVENTORY INSTRUCTION
-{base_inventory_instruction}
-
-## ANALYSIS GUIDELINES
-
-- **High Relevancy**: Exact matches found with good inventory
-- **Medium Relevancy**: Good partial matches or exact matches with poor inventory  
-- **Low Relevancy**: Only weak matches or category-level results
-- **Inventory Impact**: Consider how stock levels within each relevance tier affect final rankings
-- **Customer Risk**: High risk if top results are irrelevant or out of stock
-- **Actions**: Be specific about which results (by index) need attention
-
-## CRITICAL REQUIREMENTS
-
-1. Response must be ONLY the JSON structure above
-2. No additional text before or after the JSON
-3. All fields must be completed with specific, actionable content
-4. Reference specific result indices where applicable
-5. Provide clear business justification for all recommendations
-
-Generate the executive summary now:
-"""
-    return prompt
 
 # --- Backward Compatibility Function ---
 def evaluate_search_results(query: str, results: List[Dict[str, str]], 
