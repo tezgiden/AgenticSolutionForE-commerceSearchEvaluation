@@ -359,6 +359,7 @@ def run_configurable_agentic_search(config: AppConfig, scraped_results_file: str
     try:
         for task_idx, task in enumerate(all_search_tasks):
             query = task.get("query")
+            start_time = time.time()
             if not query:
                 print("Skipping task with no query.")
                 continue
@@ -500,6 +501,9 @@ def run_configurable_agentic_search(config: AppConfig, scraped_results_file: str
             if not scraped_results_file:
                 time.sleep(config.deployment_config.delay_between_searches)
 
+            elapsed_time = time.time() - start_time
+            print(f"Query '{query}' processed in {elapsed_time:.2f} seconds")
+
     finally:
         # Ensure driver is closed
         if driver:
@@ -565,7 +569,7 @@ def main():
     parser.add_argument("--output-file", type=str, help="Override output file path")
     
     args = parser.parse_args()
-    
+    start_time = time.time()
     try:
         # Handle list sites command
         if args.list_sites:
@@ -625,13 +629,16 @@ def main():
         print(f"Starting Enhanced Agentic Search Solution for {config.site_config.site_name}...")
         
         # Run the search
-        run_configurable_agentic_search(config, scraped_results_file="llm_debug/scraped_test.json")
+        #run_configurable_agentic_search(config, scraped_results_file="llm_debug/scraped_test.json")
+        run_configurable_agentic_search(config)
         
         print(f"\nEnhanced Agentic Search Solution finished for {config.site_config.site_name}.")
         print(f"Results saved to: {config.site_config.output_config.output_file}")
         if config.evaluation_config.enable_detailed_analysis:
             print(f"Detailed analysis saved to: {config.site_config.output_config.detailed_output_file}")
-            
+        elapsed = time.time() - start_time
+        print(f"\nTotal runtime: {elapsed/60:.2f} minutes")
+
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)

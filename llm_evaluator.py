@@ -337,102 +337,67 @@ Each justification: maximum 10 words
 """,
 
         "multiple_terms": f"""
-# E-commerce Search Relevance Evaluation: Multi-Term Query
+You are a JSON generation specialist. Your ONLY task is to output valid JSON evaluating 10 search results.
 
-You are an expert e-commerce product relevance analyst specializing in automotive and industrial parts.
+SEARCH QUERY: "armada 4707q"
 
-**SEARCH QUERY**: "{{query}}"  
-**SEARCH TYPE**: multiple_terms  
-**BUSINESS CONTEXT**: E-commerce multi-term search optimization for conversion and customer satisfaction
+CRITICAL RULES:
+1. Output ONLY valid JSON - no other text
+2. Must have exactly 10 evaluations (indices 0-9)
+3. Use EXACT field names from template
+4. Copy titles and part numbers EXACTLY from input data
+5. Find "4707q" substring in part numbers or title for relevance scoring
 
+ANALYSIS LOGIC:
+- Query terms: ["armada", "4707q"]
+- High relevance (8-10): Contains "4707q" in part_number and/or vendor_part_number + "armada" or "4707q" in title + good stock
+- Medium relevance (6-7): Contains "4707q" in part number  or vendor_part_number + "armada" or "4707q"  in title + poor/no stock
+- Low relevance (1-5): Only "armada" or  "4707q"  matches either in part number or vendor_part_number or title, poor/no stock 
 
-## OUTPUT FORMATMANDATORY STRUCTURE
+INVENTORY RULES:
+- inventory_quantity > 10 → "Available"
+- inventory_quantity 1-10 → "Low Stock"
+- inventory_quantity = "N/A" or 0 → "Out of Stock"
+- "Available", "Low Stock", "Out of Stock" must be used in inventory_status field. DO NOT use anything else to classify the inventory_status.
 
-**CRITICAL**: 
-- Your response must include exactly {{search_result_count}} evaluation entries in the "evaluations" array, one for each Result (0-{{search_result_count_minus_one}}).
-- Your response must include "ranking_summary", quality_score" and "conversion_likelihood" sections in the JSON
-- Validate the JSON structure before submitting.
-- If a field is EMPTY or "N/A", treat it as MISSING. DO NOT ASSUME MEANING OR MATCH FROM IT.
+BUSINESS IMPACT RULES:
+Consider:
+- Conversion Likelihood**: Will customer purchase this result?
+- Customer Satisfaction**: Does this meet search expectations?
+- Inventory Efficiency**: Does ranking optimize available stock?
+- Brand Trust**: Does result quality maintain platform credibility?
 
-🧠 TIP: If you are truncating results or evaluations, STOP and retry with fewer tokens. DO NOT SKIP ENTRIES.
-
-
-
-```json
-{{{{
-  "search_analysis": {{{{
-    "query": "{{query}}",
-    "query_terms": ["term1", "term2", "term3"],
-    "total_results": 0,
-    "full_matches_found": 0,
-    "partial_matches_found": 0,
-    "inventory_considerations_applied": true
-  }}}},  ← **IMPORTANT: COMMA HERE**
-  "evaluations": [
-    {{{{
-      "result_index": 0,
-      "title": "Product Title",
-      "relevance_tier": "High|Medium|Low",
-      "relevance_score": "1-10",
-      "terms_matched": ["List only the query terms that matched any of: title, part_number, vendor_part_number, manufacturer_part_number"],
-      "terms_missing": ["missing_term1"],
-      "match_quality": "All Key Terms|Most Terms|Some Terms|Few Terms",
-      "contextual_accuracy": "Excellent|Good|Fair|Poor",
-      "inventory_status": "Available|Low Stock|Out of Stock|Unknown. Use the following strict rules:  - If inventory_quantity > 10 → Available     - If inventory_quantity between 1-10 → Low Stock     - If inventory_quantity = 0 or inventory_quantity = 'N/A' → Out of Stock    - If inventory_quantity is missing or unparseable → Unknown. If inventory_quantity is "N/A" or 0, then inventory_status MUST be "Out of Stock"—NO EXCEPTIONS'",
-      "inventory_quantity": "actual number or N/A",
-      "part_number": "actual part number or N/A",
-      "vendor_part_number": "actual vendor part number or N/A",
-      "justification": "Detailed explanation of which terms matched, context quality, and relevance reasoning. ",
-      "inventory_impact": "How inventory affected ranking within relevance tier",
-      "business_impact": "Excellent|Good|Fair|Poor",
-      "recommended_action": "Promote|Maintain|Demote|Remove|Urgent Action"
-    }}}}... [CONTINUE FOR ALL {{search_result_count}} RESULTS - DO NOT USE "..." IN ACTUAL RESPONSE]
-  ],
-  "ranking_summary": "Overall assessment of multi-term matching quality and inventory impact",
-  "quality_score": "Overall search result quality (1-10)",
-  "conversion_likelihood": "High|Medium|Low based on result relevance and availability"
-}}}} ← **IMPORTANT: MUST evaluate upto HERE. Make sure the JSON is VALID **
-```
-
-🚨 CRITICAL INSTRUCTIONS - READ CAREFULLY
-MANDATORY REQUIREMENTS:
-
-🚨 You MUST evaluate ALL {{search_result_count}} results (indices 0-{{search_result_count_minus_one}}) provided below
-🚨 Your response MUST be valid JSON format only - no additional text
-🚨 NO shortcuts, ellipsis (...), or incomplete entries allowed
-🚨 Each evaluation must include ALL required fields
-🚨 IMPORTANT: If `inventory_quantity` = "N/A" or 0, `inventory_status` MUST be "Out of Stock" — NO EXCEPTIONS.
+INVENTORY IMPACT RULES:
+Analyze how stock levels affect customer experience and conversion. 
+Quantity 'N/A' means no stock, 'Low Stock' means limited availability  and 'High Stock' means good availability.
+Quantity 'N/A' requires URGENT action to fix inventory issues.
 
 
-COUNT VERIFICATION:
+RECOMMENDED ACTION RULES:
+- "Promote" → High relevance AND Available in stock. DO NOT promote if stock is low or out of stock  or quantity with 'N/A'. NO EXCEPTIONS.  
+- "Maintain" → Medium relevance OR Low stock  
+- "Demote" → Low stock AND Medium/Low relevance  
+- "Remove" → Out of Stock AND Low relevance
+- "Urgent Action" → Critical issues like Out of Stock or quantity with 'N/A'
 
-Input: {{search_result_count}} results (Result 0 through Result {{search_result_count_minus_one}})
-Output: Exactly {{search_result_count}} evaluations in JSON array
-Before finishing: Count your evaluations = {{search_result_count}}
 
-## RELEVANCE EVALUATION FRAMEWORK
+RELEVANCE SCORE RULES:
 
 ### 🎯 **HIGH RELEVANCE (Score: 9-10)**
-**Exact Match Criteria (Prioritized Order):**
-1. **exact_match=Yes indicates an Exact Match for the search term. This product MUST BE the First one in the search results.      
-2. **Primary Part Number**: Complete character-for-character match in 'Part Number' field
-3. **Vendor Part Number**: Complete character-for-character match in 'Vendor Part Number' field  
-4. **Manufacturer Part Number**: Complete character-for-character match in manufacturer-specific fields
-5. **Title Exact Match**: Query appears as standalone complete part number in product title
+**Exact Match Criteria (Prioritized Order):**    
+1. **Primary Part Number**: Complete character-for-character match in 'part_number' field of all or one of the query terms
+2. **Vendor Part Number**: Complete character-for-character match in 'vendor_part_number' field   of all or one of the query terms
+3- There must be Available inventory for the product to be considered high relevance."Out of Stock" or quantity with 'N/A'  products are NOT considered High relevance.
 
 **Examples:**
 - ✅ Search: "4707Q" → Part Number: "4707Q" (EXACT MATCH)
-- ❌ Search: "4707Q" → Part Number: "SDNS-4707Q" (PARTIAL  MATCH- not exact)
+- ❌ Search: "4707Q" → Part Number: "SDNS-4707Q" (PARTIAL  MATCH- NOT AN EXACT MATCH)
 - ✅ Search: "BK608" → Title: "Vulcan BK608 Bearing Kit" (EXACT MATCH in title)
 
 ### 🎯 **MEDIUM RELEVANCE (Score: 6-8)**
 **Partial Match Criteria:**
-1. **cross_ref_match=Yes or partial_match=Yes indicates a Partial Match to the serch term.
-2. **Substring Match**: Query is contained within part number (e.g., "4707Q" in "SDNS-4707Q" or "4707Q-AK" in "Armada Brake pad WWAK4707Q-AK12")
-3. **Reverse Substring**: Part number is contained within query (longer query, shorter part)
-4. **Cross-Reference Match**: Explicitly labeled as "Compatible with", "Replaces", "Alternative for"
-5. **Model/Series Match**: Part of same product series or model family
-6. **Functional Equivalent**: Same function but different manufacturer designation
+1. **Substring Match**: All or one of the query terms is contained within 'part_number' or 'vendor_part_number' or 'Title' (e.g., "4707Q" in "SDNS-4707Q" or "4707Q-AK" in "Armada Brake pad WWAK4707Q-AK12") 
+2- There must be Low Stock or Available for the product to be considered Medium relevance. "Out of Stock"  or quantity with 'N/A'  products are NOT considered Medium relevance.
 
 **Examples:**
 - ✅ Search: "4707Q" → Part Number: "AK4707Q-AK" (PARTIAL MATCH "4707Q" in "AK4707Q-AK")
@@ -441,69 +406,107 @@ Before finishing: Count your evaluations = {{search_result_count}}
 
 ### 🎯 **LOW RELEVANCE (Score: 1-5)**
 **Weak or No Match:**
-1. **Category Only**: Same product type but no part number relationship
-2. **Keyword Overlap**: Only shares common words but different context
-3. **Unrelated**: Different product category or no logical connection
-4. **False Positive**: Incidental number matches in unrelated fields
+1- No match to any of the query terms in part_number, vendor_part_number or title
+2- Or there is no stock available for the product
 
-{base_inventory_instruction}
-
-{enhanced_evaluation_criteria}
-
-
-FINAL REMINDER:
-
-Response must be ONLY the JSON above
-Must contain exactly {{search_result_count}} evaluations (indices 0-{{search_result_count_minus_one}}). Count evaluations array length = {{search_result_count}}
-No additional text before or after JSON
-Each justification: MUST be 20 words or less
-
-{critical_evaluation_guidelines}
+### 🎯 **RELEVANCE TIER, INVENTORY STATUS AND ACTION MAPPING**
+| Relevance Tier | Inventory Status | Action        |
+| -------------- | ---------------- | ------------- |
+| High (9-10)    | Available        | Promote       |
+| High (9-10)    | Low Stock        | Maintain      |
+| High (9-10)    | Out of Stock/N/A | Remove        |
+| Medium (6-8)   | Available        | Maintain      |
+| Medium (6-8)   | Low Stock        | Demote        |
+| Medium         | Out of Stock/N/A | Remove        |
+| Low (1-5)      | Available        | Maintain      |
+| Low (1-5)      | Low Stock        | Demote        |
+| Low            | Out of Stock/N/A | Remove/Urgent |
 
 
-
-### HERE IS A SAMPLE OUTPUT:
-```json
+EXACT JSON TEMPLATE TO FILL:
 {{{{
-  "search_analysis":{{{{
+  "search_analysis": {{{{
     "query": "armada 4707q",
     "query_terms": ["armada", "4707q"],
     "total_results": 10,
     "full_matches_found": 0,
-    "partial_matches_found": 0,
+    "partial_matches_found": 10,
     "inventory_considerations_applied": true
   }}}},
   "evaluations": [
     {{{{
-      "result_index": 0,
-      "title": "Armada Brake Shoe Kit New",
-      "relevance_tier": "High",
-      "relevance_score": "9",
+      "result_index": COPY_RESULT_INDEX_FROM_INPUT,
+      "title": "COPY_EXACT_TITLE_FROM_RESULT",
+      "inventory_quantity": "COPY_EXACT_INVENTORY/QUANTITY_FROM_RESULT",
+      "part_number": "COPY_EXACT_PART_NUMBER",
+      "vendor_part_number": "COPY_EXACT_VENDOR_PART_NUMBER",
+      "price": "COPY_EXACT_PRICE_FROM_RESULT_0",
+      "relevance_tier": "Medium",
+      "relevance_score": "7",
       "terms_matched": ["armada", "4707q"],
       "terms_missing": [],
-      "match_quality": "All Key Terms",
-      "contextual_accuracy": "Excellent",
+      "match_quality": "Most Terms",
+      "contextual_accuracy": "Good",
       "inventory_status": "Available",
-      "inventory_quantity": "44",
-      "part_number": "NK4707QPAR2",
-      "vendor_part_number": "4707QPAR2",
-      "justification": "Both terms match exactly, strong title alignment.",
-      "inventory_impact": "Boosted due to high stock availability",
-      "business_impact": "Excellent",
+      "justification": "4707Q found in vendor part number with armada brand match",
+      "inventory_impact": "High stock supports good ranking",
+      "business_impact": "Good",
       "recommended_action": "Promote"
     }}}},
-    {{{{
-      "result_index": 1,
-      "title": "Product Title",
-      ...
-    }}}}
   ],
-  "ranking_summary": "Summarize ranking and inventory impact.",
-  "quality_score": "8",
-  "conversion_likelihood": "High"
+  "ranking_summary": "All results show armada brand with 4707Q pattern matches",
+  "quality_score": "7",
+  "conversion_likelihood": "Medium"
 }}}}
-```
 
+STEP-BY-STEP PROCESS:
+1. Copy JSON template above
+2. For each result 0-9:
+   - Copy EXACT title from input
+   - Copy EXACT part_number from input  
+   - Copy EXACT vendor_part_number from input if available or set it to "N/A"
+   - Copy EXACT inventory_quantity from input set it to "N/A" if not available or not parsable or "N/A"
+   - Check if vendor_part_number contains "4707q" (case insensitive)
+   - Check if title contains "armada" (case insensitive)
+   - Check if part_number contains "armada" or "4707q" (case insensitive)
+   - Use BUSINESS IMPACT RULES to set business_impact
+   - Use RECOMMENDED ACTION RULES to set recommended_action
+   - Use INVENTORY IMPACT RULES to set inventory_impact
+   - Set inventory_status based on INVENTORY RULES
+   - Set terms_missing: list of any query terms not found in title, part_number, or vendor_part_number
+   - Set terms_matched: list of query terms found in title or part_number or vendor_part_number
+   - set match_quality to "All Key Terms" if all key terms match, "Some Key Terms" if some key terms match, otherwise "No Key Terms"
+   - Set numeric relevance_score based on RELEVANCE SCORE RULES:
+   - Set text relevance_tier based on RELEVANCE SCORE RULES:
+   - Write 10-word justification explaining matches
+   - Set contextual_accuracy to "Excellent" if all key terms match, "Good" or "Fair" depending on how many matches we have in all fields, otherwise "Poor". 
+3. Populate the "ranking_summary", "quality_score", and "conversion_likelihood" fields based on overall evaluation.
+4. Validate JSON syntax
+5. Count evaluations array = 10
+
+VALIDATION CHECKLIST:
+□ Exactly 10 items in evaluations array
+□ All field names match template exactly
+□ No extra fields added
+□ All titles/part numbers copied exactly from input
+□ Valid JSON syntax with proper commas and brackets
+□ All required fields present in each evaluation
+
+COMMON ERRORS TO AVOID:
+- DO NOT add extra fields like "manufacturer_part_number", "description", "price"
+- DO NOT make up data - copy exactly from input- 
+- DO NOT ASSUME MEANING OR MATCH FROM IT. If a field is EMPTY or "N/A", treat it as MISSING. 
+- DO NOT use "..." or skip entries
+- DO NOT have trailing commas
+- DO NOT mix up data between different results
+
+START WITH RESULT 0 DATA:
+Title: "Armada Brake Shoe Reman"
+Part Number: "LS4707QPAR23P" 
+Vendor Part Number: "4707QPAR23P"
+Inventory: 518
+
+Analysis: "4707Q" appears in "4707QPAR23P" → High match with good stock
 
 **RESULTS TO EVALUATE:**
 {{results_text}}
@@ -524,7 +527,7 @@ You are an expert e-commerce analyst tasked with creating a concise executive su
 Generate a comprehensive business recommendations summary in the EXACT JSON format specified below. Focus on:
 
 1. **Relevancy Assessment**: Evaluate overall match quality (High if exact matches exist, Medium for good partial matches, Low for poor matches)
-2. **Inventory Impact**: Analyze how stock levels affect customer experience and conversion. Quantiy 'N/A' means no stock, 'Low Stock' means limited availability, 'Medium Stock' means some availability, and 'High Stock' means good availability.
+2. **Inventory Impact**: Analyze how stock levels affect customer experience and conversion. Quantity 'N/A' means no stock, 'Low Stock' means limited availability, 'Medium Stock' means some availability, and 'High Stock' means good availability.
 3. **Customer Satisfaction Risk**: Assess potential frustration or dissatisfaction
 4. **Key Insights**: Highlight the most important findings
 5. **Recommended Actions**: Provide specific, actionable recommendations
@@ -791,34 +794,37 @@ def fix_common_json_issues(json_str: str) -> str:
 
 def extract_json_from_response(response_text: str) -> Optional[str]:
     """
-    Extract JSON from LLM response text
-    
+    Extract JSON from LLM response text, and attempt to auto-close if truncated.
     Args:
         response_text: Full LLM response
-        
     Returns:
         Extracted JSON string or None
     """
-    # Try to find JSON block with various patterns
+    import re
+
     json_patterns = [
-        # Pattern 1: JSON in code blocks
         r'```json\s*(.*?)\s*```',
-        # Pattern 2: JSON starting with { and ending with }
-        r'({[\s\S]*?})\s*$',
-        # Pattern 3: JSON anywhere in the text
+        r'({[\s\S]*?})\s*$',  # strict: must end with }
         r'({[\s\S]*?"evaluations"[\s\S]*?})',
-        # Pattern 4: Just look for opening brace to end of string
-        r'({[\s\S]*)'
+        r'({[\s\S]*)'  # fallback: from first { to end
     ]
     
     for pattern in json_patterns:
         match = re.search(pattern, response_text, re.DOTALL | re.MULTILINE)
         if match:
             potential_json = match.group(1).strip()
-            # Basic validation - should start with { and end with }
-            if potential_json.startswith('{') and potential_json.endswith('}'):
-                return potential_json
-    
+            if potential_json.startswith('{'):
+                # Attempt to auto-close if missing closing brackets/braces
+                open_braces = potential_json.count('{')
+                close_braces = potential_json.count('}')
+                open_brackets = potential_json.count('[')
+                close_brackets = potential_json.count(']')
+                # Add missing closing brackets/braces
+                potential_json += ']' * (open_brackets - close_brackets)
+                potential_json += '}' * (open_braces - close_braces)
+                # Now check if it's valid
+                if potential_json.endswith('}'):
+                    return potential_json
     return None
 
 def parse_enhanced_llm_response_improved(response: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -844,9 +850,9 @@ def parse_enhanced_llm_response_improved(response: Dict[str, Any]) -> Optional[D
         if generated_text.strip().startswith("```json"):
             generated_text = generated_text.strip()[7:]  # Remove the first 7 chars (```json)
         if generated_text.strip().endswith("```"):
-            generated_text = generated_text.strip()
-            generated_text = generated_text[:-3]  # Remove the last 3 chars (```)
-
+            generated_text = generated_text.strip()[:-3]  # Remove the last 3 chars (```) 
+        now = datetime.now().strftime("%Y%m%d_%H%M%S")
+        dump_prompt_to_debug_dir(generated_text,  f"generated_text{now}.txt" )
         # Step 1: Extract JSON from response
         json_str = extract_json_from_response(generated_text)
         if not json_str:
@@ -854,39 +860,84 @@ def parse_enhanced_llm_response_improved(response: Dict[str, Any]) -> Optional[D
             print(f"Response preview: {generated_text[:500]}...")
             return fallback_manual_extraction(generated_text)
         
+        dump_prompt_to_debug_dir(json_str,  f"extracted_json{now}.txt" )
+        # --- Save the extracted JSON to a file for debugging ---
         print(f"✅ Extracted JSON ({len(json_str)} chars)")
         
-        # Step 2: Fix common JSON issues
-        fixed_json = fix_common_json_issues(json_str)
-        print(f"🔧 Applied JSON fixes")
-        
-        # Step 3: Try to parse JSON
         try:
-            parsed_data = json.loads(fixed_json)
-            
+            parsed_data = json.loads(json_str)
             # Step 4: Validate structure
             if validate_evaluation_structure(parsed_data):
                 print(f"✅ Successfully parsed evaluation with {len(parsed_data.get('evaluations', []))} evaluations")
                 return parsed_data
             else:
                 print("⚠️ Parsed JSON but structure validation failed")
-                return fallback_manual_extraction(generated_text)
-                
+                return fallback_manual_extraction(generated_text)            
         except json.JSONDecodeError as e:
-            print(f"❌ JSON parsing failed even after fixes: {e}")
-            print(f"Problematic JSON preview: {fixed_json[:300]}...")
-            
-            # Try one more aggressive fix
-            aggressive_fix = aggressive_json_repair(fixed_json)
+            print(f"❌ Initial JSON parsing failed: {e}")
+            print(f"Problematic JSON preview: {json_str[:300]}...")
+            print("🔧 Attempting to fix common JSON issues...")
+            # Step 2: Fix common JSON issues
+            fixed_json = fix_common_json_issues(json_str)
+            print(f"🔧 Applied JSON fixes")
             try:
-                parsed_data = json.loads(aggressive_fix)
+                parsed_data = json.loads(fixed_json)
+                # Step 4: Validate structure
                 if validate_evaluation_structure(parsed_data):
-                    print(f"✅ Successfully parsed after aggressive repair")
+                    print(f"✅ Successfully parsed evaluation with {len(parsed_data.get('evaluations', []))} evaluations")
                     return parsed_data
-            except:
-                pass
+                else:
+                    print("⚠️ Parsed JSON but structure validation failed")
+                    return fallback_manual_extraction(generated_text)
+            except json.JSONDecodeError as e:
+                print(f"❌ JSON parsing failed even after fixes: {e}")
+                print(f"Problematic JSON preview: {fixed_json[:300]}...")
+                
+                # Try one more aggressive fix
+                aggressive_fix = aggressive_json_repair(fixed_json)
+                try:
+                    parsed_data = json.loads(aggressive_fix)
+                    if validate_evaluation_structure(parsed_data):
+                        print(f"✅ Successfully parsed after aggressive repair")
+                        return parsed_data
+                except:
+                    pass
+                
+                return fallback_manual_extraction(generated_text)
+           
+
+        
+        # Step 2: Fix common JSON issues
+        # fixed_json = fix_common_json_issues(json_str)
+        # print(f"🔧 Applied JSON fixes")
+        
+        # Step 3: Try to parse JSON
+        # try:
+        #     parsed_data = json.loads(fixed_json)
             
-            return fallback_manual_extraction(generated_text)
+        #     # Step 4: Validate structure
+        #     if validate_evaluation_structure(parsed_data):
+        #         print(f"✅ Successfully parsed evaluation with {len(parsed_data.get('evaluations', []))} evaluations")
+        #         return parsed_data
+        #     else:
+        #         print("⚠️ Parsed JSON but structure validation failed")
+        #         return fallback_manual_extraction(generated_text)
+                
+        # except json.JSONDecodeError as e:
+        #     print(f"❌ JSON parsing failed even after fixes: {e}")
+        #     print(f"Problematic JSON preview: {fixed_json[:300]}...")
+            
+        #     # Try one more aggressive fix
+        #     aggressive_fix = aggressive_json_repair(fixed_json)
+        #     try:
+        #         parsed_data = json.loads(aggressive_fix)
+        #         if validate_evaluation_structure(parsed_data):
+        #             print(f"✅ Successfully parsed after aggressive repair")
+        #             return parsed_data
+        #     except:
+        #         pass
+            
+        #     return fallback_manual_extraction(generated_text)
     
     except Exception as e:
         print(f"Unexpected error in parsing: {e}")
@@ -1226,6 +1277,21 @@ def extract_evaluations_manually(text: str) -> Optional[Dict[str, Any]]:
         print(f"Manual extraction error: {e}")
         return None# Enhanced LLM Evaluation Module with Inventory-Aware Ranking - COMPLETE VERSION
 
+def dump_prompt_to_debug_dir(prompt: str, filename: str = None) -> str:
+    """
+    Dumps the given prompt to the llm_debug directory with a timestamped filename (or provided filename).
+    Returns the filename used.
+    """
+    debug_dir = "llm_debug"
+    os.makedirs(debug_dir, exist_ok=True)
+    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    if filename is None:
+        filename = f"prompt_{now}.txt"
+    file_path = os.path.join(debug_dir, filename)
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(prompt)
+    return filename
+
 
 # --- Main Enhanced Evaluation Function ---
 def evaluate_search_results_with_inventory(query: str, results: List[Dict[str, str]], 
@@ -1437,7 +1503,7 @@ def validate_executive_summary_structure(data: dict) -> bool:
                 print(f"Missing key in recommended_actions: {key}")
                 is_at_least_one_action= True
 
-        return is_at_least_one_action
+        return not is_at_least_one_action
     except Exception as e:
         print(f"Error in executive summary structure validation: {e}")
         return False
