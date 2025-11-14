@@ -1,0 +1,77 @@
+# Enterprise Web Scraper - Production Dockerfile
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    DISPLAY=:99
+
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    # Chrome dependencies
+    wget \
+    gnupg \
+    unzip \
+    curl \
+    xvfb \
+    # Additional utilities
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Google Chrome
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ChromeDriver
+RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) \
+    && wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
+    && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/ \
+    && rm /tmp/chromedriver.zip \
+    && chmod +x /usr/local/bin/chromedriver
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Install the application
+RUN pip install -e .
+
+# Create non-root user for security
+RUN groupadd -r scraper && useradd -r -g scraper scraper \
+    && chown -R scraper:scraper /app
+
+# Create directories for data persistence
+RUN mkdir -p /app/data /app/logs /app/reports /app/config \
+    && chown -R scraper:scraper /app/data /app/logs /app/reports /app/config
+
+# Switch to non-root user
+USER scraper
+
+# Set up display for headless Chrome
+ENV DISPLAY=:99
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD python -c "from scraper_factory import ScraperFactory; print('Health check passed')" || exit 1
+
+# Default command
+CMD ["python", "-m", "cli_interface", "--help"]
+
+# Alternative entrypoints for different use cases:
+# For web API: CMD ["python", "-m", "api_server"]
+# For worker: CMD ["python", "-m", "worker"]
+# For scheduler: CMD ["python", "-m", "scheduler"]

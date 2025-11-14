@@ -728,6 +728,12 @@ def query_ollama(prompt: str, model: str = DEFAULT_MODEL, api_endpoint: str = OL
     
     for attempt in range(max_retries):
         try:
+            print(f"Attempt {attempt+1}/{max_retries} to query Ollama API...")
+            print(f"Using model: {model}")
+            print(f"API Endpoint: {api_endpoint}")
+            print(f"Payload: {json.dumps(payload, indent=2)}")
+            print(f"Timeout: {timeout} seconds")
+            # Send POST request to Ollama API
             response = requests.post(
                 api_endpoint,
                 json=payload,

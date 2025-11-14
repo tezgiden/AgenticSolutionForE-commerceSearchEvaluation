@@ -1,0 +1,531 @@
+"""
+Configuration management module for the e-commerce search evaluation system.
+
+This module provides type-safe configuration loading and validation with clear
+separation of concerns and robust error handling.
+"""
+
+import json
+import os
+from typing import Dict, Any, List, Optional
+from dataclasses import dataclass
+from abc import ABC, abstractmethod
+from config.config_models import (
+    AppConfig, ScrapingConfig, OutputConfig, SiteConfig, LLMConfig, EvaluationConfig, ChromeConfig, DeploymentConfig
+)   
+
+# ========================
+# Custom Exceptions
+# ========================
+
+class ConfigurationError(Exception):
+    """Base exception for configuration-related errors."""
+    pass
+
+
+class ConfigurationFileError(ConfigurationError):
+    """Raised when configuration file cannot be found or read."""
+    pass
+
+
+class ConfigurationValidationError(ConfigurationError):
+    """Raised when configuration validation fails."""
+    pass
+
+
+class ConfigurationParsingError(ConfigurationError):
+    """Raised when configuration cannot be parsed."""
+    pass
+
+
+
+# ========================
+# Configuration Factory
+# ========================
+
+class ConfigurationFactory:
+    """Factory class for creating configuration objects from raw data."""
+
+    @staticmethod
+    def create_scraping_config(data: Dict[str, Any]) -> ScrapingConfig:
+        """Create ScrapingConfig from dictionary."""
+        try:
+            return ScrapingConfig(
+                search_input_selectors=data["search_input_selectors"],
+                search_button_selectors=data["search_button_selectors"],
+                product_card_selectors=data["product_card_selectors"],
+                product_link_selector=data["product_link_selector"],
+                product_title_selectors=data["product_title_selectors"],
+                product_sku_selectors=data["product_sku_selectors"],
+                product_price_selectors=data["product_price_selectors"],
+                product_quantity_selectors=data["product_quantity_selectors"],
+                badges_selectors=data.get("badges_selectors", []),
+                exact_match_selectors=data.get("exact_match_selectors", []),
+                no_results_selectors=data["no_results_selectors"],
+                max_results_per_query=data["max_results_per_query"],
+                wait_timeout=data["wait_timeout"],
+                page_load_timeout=data["page_load_timeout"]
+            )
+        except KeyError as e:
+            raise ConfigurationParsingError(f"Missing required field in scraping_config: {e}")
+
+    @staticmethod
+    def create_output_config(data: Dict[str, Any]) -> OutputConfig:
+        """Create OutputConfig from dictionary."""
+        try:
+            return OutputConfig(
+                output_file=data["output_file"],
+                detailed_output_file=data["detailed_output_file"]
+            )
+        except KeyError as e:
+            raise ConfigurationParsingError(f"Missing required field in output_config: {e}")
+
+    @staticmethod
+    def create_site_config(data: Dict[str, Any], scraping_config: ScrapingConfig, 
+                          output_config: OutputConfig) -> SiteConfig:
+        """Create SiteConfig from dictionary."""
+        try:
+            return SiteConfig(
+                site_name=data["site_name"],
+                target_url=data["target_url"],
+                search_tasks=data["search_tasks"],
+                inventory_test_cases=data["inventory_test_cases"],
+                scraping_config=scraping_config,
+                output_config=output_config
+            )
+        except KeyError as e:
+            raise ConfigurationParsingError(f"Missing required field in site_config: {e}")
+
+    @staticmethod
+    def create_llm_config(data: Dict[str, Any]) -> LLMConfig:
+        """Create LLMConfig from dictionary."""
+        try:
+            return LLMConfig(
+                ollama_api_endpoint=data["ollama_api_endpoint"],
+                default_model=data["default_model"],
+                timeout=data["timeout"],
+                max_retries=data["max_retries"]
+            )
+        except KeyError as e:
+            raise ConfigurationParsingError(f"Missing required field in llm_config: {e}")
+
+    @staticmethod
+    def create_evaluation_config(data: Dict[str, Any]) -> EvaluationConfig:
+        """Create EvaluationConfig from dictionary."""
+        try:
+            return EvaluationConfig(
+                enable_inventory_ranking=data["enable_inventory_ranking"],
+                enable_detailed_analysis=data["enable_detailed_analysis"],
+                inventory_weight_factor=data["inventory_weight_factor"],
+                apply_post_ranking=data["apply_post_ranking"],
+                low_stock_threshold=data["low_stock_threshold"]
+            )
+        except KeyError as e:
+            raise ConfigurationParsingError(f"Missing required field in evaluation_config: {e}")
+
+    @staticmethod
+    def create_chrome_config(data: Dict[str, Any]) -> ChromeConfig:
+        """Create ChromeConfig from dictionary."""
+        try:
+            return ChromeConfig(
+                chrome_driver_path=data["chrome_driver_path"],
+                headless=data["headless"],
+                window_size=data["window_size"],
+                implicit_wait=data["implicit_wait"],
+                user_agent=data["user_agent"]
+            )
+        except KeyError as e:
+            raise ConfigurationParsingError(f"Missing required field in chrome_config: {e}")
+
+    @staticmethod
+    def create_deployment_config(data: Dict[str, Any]) -> DeploymentConfig:
+        """Create DeploymentConfig from dictionary."""
+        try:
+            return DeploymentConfig(
+                environment=data["environment"],
+                log_level=data["log_level"],
+                enable_screenshots=data["enable_screenshots"],
+                delay_between_searches=data["delay_between_searches"],
+                enable_metrics_collection=data["enable_metrics_collection"]
+            )
+        except KeyError as e:
+            raise ConfigurationParsingError(f"Missing required field in deployment_config: {e}")
+
+
+# ========================
+# Configuration Repository Interface
+# ========================
+
+class ConfigurationRepository(ABC):
+    """Abstract base class for configuration repositories."""
+
+    @abstractmethod
+    def load_raw_config(self) -> Dict[str, Any]:
+        """Load raw configuration data."""
+        pass
+
+    @abstractmethod
+    def exists(self) -> bool:
+        """Check if configuration source exists."""
+        pass
+
+
+# ========================
+# File-based Configuration Repository
+# ========================
+
+class FileConfigurationRepository(ConfigurationRepository):
+    """File-based implementation of configuration repository."""
+
+    def __init__(self, config_path: str):
+        self.config_path = config_path
+
+    def exists(self) -> bool:
+        """Check if configuration file exists."""
+        return os.path.exists(self.config_path)
+
+    def load_raw_config(self) -> Dict[str, Any]:
+        """Load configuration from JSON file."""
+        if not self.exists():
+            raise ConfigurationFileError(f"Configuration file not found: {self.config_path}")
+
+        try:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            raise ConfigurationParsingError(f"Invalid JSON in configuration file {self.config_path}: {e}")
+        except PermissionError:
+            raise ConfigurationFileError(f"Permission denied reading configuration file: {self.config_path}")
+        except Exception as e:
+            raise ConfigurationFileError(f"Error loading configuration from {self.config_path}: {e}")
+
+
+# ========================
+# Configuration Override Handler
+# ========================
+
+class ConfigurationOverrideHandler:
+    """Handles runtime configuration overrides."""
+
+    @staticmethod
+    def apply_overrides(config: AppConfig, overrides: Dict[str, Any]) -> AppConfig:
+        """
+        Apply runtime overrides to configuration.
+        
+        Args:
+            config: Original configuration
+            overrides: Dictionary of configuration overrides
+            
+        Returns:
+            New AppConfig with applied overrides
+        """
+        # Create mutable copies of the configurations
+        site_config_dict = {
+            'site_name': config.site_config.site_name,
+            'target_url': config.site_config.target_url,
+            'search_tasks': config.site_config.search_tasks,
+            'inventory_test_cases': config.site_config.inventory_test_cases,
+            'scraping_config': config.site_config.scraping_config,
+            'output_config': config.site_config.output_config
+        }
+
+        llm_config_dict = {
+            'ollama_api_endpoint': config.llm_config.ollama_api_endpoint,
+            'default_model': config.llm_config.default_model,
+            'timeout': config.llm_config.timeout,
+            'max_retries': config.llm_config.max_retries
+        }
+
+        evaluation_config_dict = {
+            'enable_inventory_ranking': config.evaluation_config.enable_inventory_ranking,
+            'enable_detailed_analysis': config.evaluation_config.enable_detailed_analysis,
+            'inventory_weight_factor': config.evaluation_config.inventory_weight_factor,
+            'apply_post_ranking': config.evaluation_config.apply_post_ranking,
+            'low_stock_threshold': config.evaluation_config.low_stock_threshold
+        }
+
+        chrome_config_dict = {
+            'chrome_driver_path': config.chrome_config.chrome_driver_path,
+            'headless': config.chrome_config.headless,
+            'window_size': config.chrome_config.window_size.copy(),
+            'implicit_wait': config.chrome_config.implicit_wait,
+            'user_agent': config.chrome_config.user_agent
+        }
+
+        # Apply overrides
+        if "model" in overrides:
+            llm_config_dict['default_model'] = overrides["model"]
+
+        if "enable_inventory_ranking" in overrides:
+            evaluation_config_dict['enable_inventory_ranking'] = overrides["enable_inventory_ranking"]
+
+        if "max_results" in overrides:
+            # Create new scraping config with override
+            scraping_config_dict = {
+                'search_input_selectors': config.site_config.scraping_config.search_input_selectors,
+                'search_button_selectors': config.site_config.scraping_config.search_button_selectors,
+                'product_card_selectors': config.site_config.scraping_config.product_card_selectors,
+                'product_link_selector': config.site_config.scraping_config.product_link_selector,
+                'product_title_selectors': config.site_config.scraping_config.product_title_selectors,
+                'product_sku_selectors': config.site_config.scraping_config.product_sku_selectors,
+                'product_price_selectors': config.site_config.scraping_config.product_price_selectors,
+                'product_quantity_selectors': config.site_config.scraping_config.product_quantity_selectors,
+                'badges_selectors': config.site_config.scraping_config.badges_selectors,
+                'exact_match_selectors': config.site_config.scraping_config.exact_match_selectors,
+                'no_results_selectors': config.site_config.scraping_config.no_results_selectors,
+                'max_results_per_query': overrides["max_results"],
+                'wait_timeout': config.site_config.scraping_config.wait_timeout,
+                'page_load_timeout': config.site_config.scraping_config.page_load_timeout
+            }
+            site_config_dict['scraping_config'] = ScrapingConfig(**scraping_config_dict)
+
+        if "headless" in overrides:
+            chrome_config_dict['headless'] = overrides["headless"]
+
+        if "output_file" in overrides:
+            # Create new output config with override
+            output_config_dict = {
+                'output_file': overrides["output_file"],
+                'detailed_output_file': config.site_config.output_config.detailed_output_file
+            }
+            site_config_dict['output_config'] = OutputConfig(**output_config_dict)
+
+        # Create new configuration objects
+        new_llm_config = LLMConfig(**llm_config_dict)
+        new_evaluation_config = EvaluationConfig(**evaluation_config_dict)
+        new_chrome_config = ChromeConfig(**chrome_config_dict)
+
+        # Only create new scraping config if not already overridden
+        if 'scraping_config' not in site_config_dict or isinstance(site_config_dict['scraping_config'], ScrapingConfig):
+            if not isinstance(site_config_dict['scraping_config'], ScrapingConfig):
+                site_config_dict['scraping_config'] = config.site_config.scraping_config
+
+        # Only create new output config if not already overridden
+        if 'output_config' not in site_config_dict or isinstance(site_config_dict['output_config'], OutputConfig):
+            if not isinstance(site_config_dict['output_config'], OutputConfig):
+                site_config_dict['output_config'] = config.site_config.output_config
+
+        new_site_config = SiteConfig(**site_config_dict)
+
+        return AppConfig(
+            site_config=new_site_config,
+            llm_config=new_llm_config,
+            evaluation_config=new_evaluation_config,
+            chrome_config=new_chrome_config,
+            deployment_config=config.deployment_config
+        )
+
+
+# ========================
+# Main Configuration Loader
+# ========================
+
+class ConfigurationLoader:
+    """
+    Main configuration loader that orchestrates configuration loading,
+    parsing, validation, and override application.
+    """
+
+    def __init__(self, repository: ConfigurationRepository):
+        self.repository = repository
+        self.factory = ConfigurationFactory()
+        self.override_handler = ConfigurationOverrideHandler()
+        self._raw_config: Optional[Dict[str, Any]] = None
+
+    @classmethod
+    def from_file(cls, config_path: str = "config.json") -> 'ConfigurationLoader':
+        """Create ConfigurationLoader with file-based repository."""
+        repository = FileConfigurationRepository(config_path)
+        return cls(repository)
+
+    def load_raw_config(self) -> None:
+        """Load raw configuration data."""
+        self._raw_config = self.repository.load_raw_config()
+
+    def get_available_sites(self) -> List[str]:
+        """Get list of available site configurations."""
+        if self._raw_config is None:
+            self.load_raw_config()
+        return list(self._raw_config.get("site_configs", {}).keys())
+
+    def get_site_config(self, site_key: str) -> AppConfig:
+        """
+        Get complete configuration for a specific site.
+        
+        Args:
+            site_key: The site configuration key (e.g., 'truckpro', 'tundrafmp')
+            
+        Returns:
+            AppConfig object with all configuration settings
+            
+        Raises:
+            ConfigurationError: If site is not found or configuration is invalid
+        """
+        if self._raw_config is None:
+            self.load_raw_config()
+
+        available_sites = self.get_available_sites()
+        if site_key not in available_sites:
+            raise ConfigurationError(f"Site '{site_key}' not found. Available sites: {available_sites}")
+
+        try:
+            site_data = self._raw_config["site_configs"][site_key]
+
+            # Create sub-configurations
+            scraping_config = self.factory.create_scraping_config(site_data["scraping_config"])
+            output_config = self.factory.create_output_config(site_data["output_config"])
+            site_config = self.factory.create_site_config(site_data, scraping_config, output_config)
+
+            llm_config = self.factory.create_llm_config(self._raw_config["llm_config"])
+            evaluation_config = self.factory.create_evaluation_config(self._raw_config["evaluation_config"])
+            chrome_config = self.factory.create_chrome_config(self._raw_config["chrome_config"])
+            deployment_config = self.factory.create_deployment_config(self._raw_config["deployment_config"])
+
+            return AppConfig(
+                site_config=site_config,
+                llm_config=llm_config,
+                evaluation_config=evaluation_config,
+                chrome_config=chrome_config,
+                deployment_config=deployment_config
+            )
+
+        except KeyError as e:
+            raise ConfigurationError(f"Missing required configuration section: {e}")
+
+    def get_site_config_with_overrides(self, site_key: str, overrides: Dict[str, Any]) -> AppConfig:
+        """
+        Get configuration with runtime overrides applied.
+        
+        Args:
+            site_key: The site configuration key
+            overrides: Dictionary of configuration overrides
+            
+        Returns:
+            AppConfig with applied overrides
+        """
+        base_config = self.get_site_config(site_key)
+        return self.override_handler.apply_overrides(base_config, overrides)
+
+    def validate_site_config(self, site_key: str) -> List[str]:
+        """
+        Validate configuration for a site.
+        
+        Args:
+            site_key: The site configuration key
+            
+        Returns:
+            List of validation errors (empty if valid)
+        """
+        try:
+            self.get_site_config(site_key)
+            return []
+        except ConfigurationError as e:
+            return [str(e)]
+        except Exception as e:
+            return [f"Unexpected validation error: {e}"]
+
+
+# ========================
+# Convenience Functions
+# ========================
+
+def load_config_for_site(site_key: str, config_path: str = "config.json") -> AppConfig:
+    """
+    Load configuration for a specific site.
+    
+    Args:
+        site_key: Site configuration key
+        config_path: Path to configuration file
+        
+    Returns:
+        AppConfig object
+    """
+    loader = ConfigurationLoader.from_file(config_path)
+    return loader.get_site_config(site_key)
+
+
+def get_available_sites(config_path: str = "config.json") -> List[str]:
+    """
+    Get list of available site configurations.
+    
+    Args:
+        config_path: Path to configuration file
+        
+    Returns:
+        List of available site keys
+    """
+    loader = ConfigurationLoader.from_file(config_path)
+    return loader.get_available_sites()
+
+
+def validate_site_config(site_key: str, config_path: str = "config.json") -> List[str]:
+    """
+    Validate configuration for a site.
+    
+    Args:
+        site_key: Site configuration key
+        config_path: Path to configuration file
+        
+    Returns:
+        List of validation errors
+    """
+    loader = ConfigurationLoader.from_file(config_path)
+    return loader.validate_site_config(site_key)
+
+
+# ========================
+# Example Usage and Testing
+# ========================
+
+if __name__ == "__main__":
+    import sys
+
+    def main():
+        """Example usage and testing."""
+        try:
+            # Create configuration loader
+            loader = ConfigurationLoader.from_file("config.json")
+
+            # Show available sites
+            sites = loader.get_available_sites()
+            print(f"Available sites: {sites}")
+
+            # Load configuration for a specific site
+            if sites:
+                site_key = sites[0]  # Use first available site
+                print(f"\nLoading configuration for: {site_key}")
+
+                config = loader.get_site_config(site_key)
+                print(f"Site: {config.site_config.site_name}")
+                print(f"URL: {config.site_config.target_url}")
+                print(f"Search tasks: {len(config.site_config.search_tasks)}")
+                print(f"Model: {config.llm_config.default_model}")
+                print(f"Inventory ranking: {config.evaluation_config.enable_inventory_ranking}")
+                print(f"Max results: {config.site_config.scraping_config.max_results_per_query}")
+
+                # Validate configuration
+                errors = loader.validate_site_config(site_key)
+                if errors:
+                    print(f"Configuration errors: {errors}")
+                else:
+                    print("Configuration is valid!")
+
+                # Test overrides
+                print(f"\nTesting configuration overrides...")
+                overridden_config = loader.get_site_config_with_overrides(site_key, {
+                    "model": "gemma3",
+                    "max_results": 20,
+                    "headless": False
+                })
+                print(f"Overridden model: {overridden_config.llm_config.default_model}")
+                print(f"Overridden max results: {overridden_config.site_config.scraping_config.max_results_per_query}")
+                print(f"Overridden headless: {overridden_config.chrome_config.headless}")
+
+        except ConfigurationError as e:
+            print(f"Configuration error: {e}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            sys.exit(1)
+
+    main()

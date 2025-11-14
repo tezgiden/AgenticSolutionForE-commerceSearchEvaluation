@@ -1,0 +1,928 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-search-evaluator"
+version = "2.0.0"
+description = "Advanced LLM-based search result evaluation with inventory awareness"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Tekin Tezgiden", email = "team@example.com"}
+]
+maintainers = [
+    {name = "Tekin Tezgiden", email = "team@example.com"}
+]
+keywords = [
+    "llm", "evaluation", "search", "e-commerce", "artificial-intelligence",
+    "inventory", "ranking", "ollama", "natural-language-processing",
+    "business-intelligence", "product-search", "relevance-scoring"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Information Technology",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Office/Business :: Financial :: Point-Of-Sale",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Natural Language :: English",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "requests>=2.31.0",
+    "click>=8.0.0",
+    "dataclasses>=0.6; python_version<'3.7'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "isort>=5.12.0",
+    "pre-commit>=3.0.0",
+]
+docs = [
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "sphinx-autodoc-typehints>=1.24.0",
+]
+enhanced = [
+    "pydantic>=2.0.0",
+    "rich>=13.0.0",
+    "tenacity>=8.0.0",
+]
+testing = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "responses>=0.23.0",
+    "pytest-benchmark>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/tezgiden/AgenticSolutionForE-commerceSearchEvaluation"
+Documentation = "https://github.com/tezgiden/AgenticSolutionForE-commerceSearchEvaluation/docs"
+Repository = "https://github.com/tezgiden/AgenticSolutionForE-commerceSearchEvaluation"
+Issues = "https://github.com/tezgiden/AgenticSolutionForE-commerceSearchEvaluation/issues"
+Changelog = "https://github.com/tezgiden/AgenticSolutionForE-commerceSearchEvaluation/blob/main/CHANGELOG.md"
+
+[project.scripts]
+llm-evaluate = "llm_evaluator.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["llm_evaluator*"]
+exclude = ["tests*", "examples*", "docs*"]
+
+[tool.setuptools.package-data]
+llm_evaluator = ["py.typed"]
+
+# Black configuration
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+# isort configuration
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+src_paths = ["llm_evaluator", "tests"]
+
+# mypy configuration
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "requests.*",
+    "click.*",
+]
+ignore_missing_imports = true
+
+# pytest configuration
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=llm_evaluator",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+testpaths = ["tests"]
+markers = [
+    "unit: marks tests as unit tests",
+    "integration: marks tests as integration tests",
+    "performance: marks tests as performance tests",
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["llm_evaluator"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+    "setup.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+# Flake8 configuration (in setup.cfg since flake8 doesn't support pyproject.toml yet)
+
+---
+
+# setup.cfg
+[flake8]
+max-line-length = 100
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    .eggs,
+    *.egg,
+    build,
+    dist,
+    .tox,
+    migrations
+ignore = 
+    # E203: whitespace before ':' (conflicts with black)
+    E203,
+    # W503: line break before binary operator (conflicts with black)
+    W503,
+    # E501: line too long (handled by black)
+    E501
+per-file-ignores =
+    # Ignore imports in __init__.py files
+    __init__.py:F401,F403
+    # Ignore complexity in test files
+    tests/*:C901
+max-complexity = 10
+
+[mypy-requests.*]
+ignore_missing_imports = True
+
+[mypy-click.*]
+ignore_missing_imports = True
+
+---
+
+# .gitignore
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Project specific
+llm_debug/
+logs/
+debug/
+*.example.json
+config/local.json
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+---
+
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: debug-statements
+      - id: name-tests-test
+        args: ['--pytest-test-first']
+      - id: requirements-txt-fixer
+
+  - repo: https://github.com/psf/black
+    rev: 23.11.0
+    hooks:
+      - id: black
+        language_version: python3
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.1
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests]
+
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: ['-c', 'pyproject.toml']
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.2
+    hooks:
+      - id: python-safety-dependencies-check
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.12.0
+    hooks:
+      - id: commitizen
+
+---
+
+# .editorconfig
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{py,pyi}]
+indent_style = space
+indent_size = 4
+max_line_length = 100
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.{json,toml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
+
+---
+
+# Makefile
+.PHONY: help install install-dev test test-cov lint format type-check clean build docs serve-docs
+
+# Default target
+help:
+	@echo "Available targets:"
+	@echo "  install      - Install package for production"
+	@echo "  install-dev  - Install package for development"
+	@echo "  test         - Run tests"
+	@echo "  test-cov     - Run tests with coverage"
+	@echo "  lint         - Run linting (flake8)"
+	@echo "  format       - Run code formatting (black, isort)"
+	@echo "  type-check   - Run type checking (mypy)"
+	@echo "  clean        - Clean build artifacts"
+	@echo "  build        - Build package"
+	@echo "  docs         - Build documentation"
+	@echo "  serve-docs   - Serve documentation locally"
+	@echo "  pre-commit   - Run pre-commit hooks"
+	@echo "  all-checks   - Run all quality checks"
+
+# Installation
+install:
+	pip install -e .
+
+install-dev:
+	pip install -e .[dev,testing,docs]
+	pre-commit install
+
+# Testing
+test:
+	pytest tests/ -v
+
+test-cov:
+	pytest tests/ --cov=llm_evaluator --cov-report=html --cov-report=term-missing
+
+test-integration:
+	pytest tests/test_integration.py -v -m integration
+
+test-performance:
+	pytest tests/test_performance.py -v -m performance --benchmark-only
+
+# Code quality
+lint:
+	flake8 llm_evaluator/ tests/
+
+format:
+	black llm_evaluator/ tests/
+	isort llm_evaluator/ tests/
+
+type-check:
+	mypy llm_evaluator/
+
+# Pre-commit
+pre-commit:
+	pre-commit run --all-files
+
+# All quality checks
+all-checks: lint type-check test-cov
+
+# Build and packaging
+clean:
+	rm -rf build/
+	rm -rf dist/
+	rm -rf *.egg-info/
+	rm -rf .coverage
+	rm -rf htmlcov/
+	rm -rf .pytest_cache/
+	rm -rf .mypy_cache/
+	find . -type d -name __pycache__ -delete
+	find . -type f -name "*.pyc" -delete
+
+build: clean
+	python -m build
+
+# Documentation
+docs:
+	sphinx-build -b html docs/ docs/_build/html
+
+serve-docs:
+	sphinx-autobuild docs/ docs/_build/html --open-browser
+
+# Development utilities
+run-example:
+	python examples/examples.py
+
+run-quick-test:
+	python -c "from llm_evaluator import run_quick_test; run_quick_test()"
+
+validate-system:
+	python -m llm_evaluator.cli validate
+
+# Security
+security-scan:
+	bandit -r llm_evaluator/
+	safety check
+
+# Docker operations
+docker-build:
+	docker build -t llm-evaluator:latest .
+
+docker-test:
+	docker-compose --profile test up --abort-on-container-exit
+
+# Release preparation
+prepare-release: all-checks build docs
+	@echo "Release preparation complete!"
+	@echo "Next steps:"
+	@echo "1. Update version in pyproject.toml and __init__.py"
+	@echo "2. Update CHANGELOG.md"
+	@echo "3. Create and push git tag"
+	@echo "4. Upload to PyPI: twine upload dist/*"
+
+---
+
+# .env.example
+# Example environment configuration file
+# Copy this to .env and update with your values
+
+# LLM Configuration
+OLLAMA_API_ENDPOINT=http://localhost:11434/api/generate
+DEFAULT_MODEL=gemma3
+TIMEOUT=600
+MAX_RETRIES=3
+
+# Logging Configuration
+LOG_LEVEL=INFO
+DEBUG_DIR=llm_debug
+
+# Environment
+ENVIRONMENT=development
+
+# Optional: Custom configuration
+# CUSTOM_CONFIG_FILE=/path/to/config.json
+
+# Optional: Performance tuning
+# ENABLE_CACHING=true
+# CACHE_TTL=3600
+
+# Optional: Monitoring
+# ENABLE_METRICS=true
+# METRICS_ENDPOINT=http://localhost:9090
+
+---
+
+# CHANGELOG.md
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- Comprehensive test framework with unit, integration, and performance tests
+- Docker support with multi-stage builds
+- CI/CD pipeline with GitHub Actions
+- Security scanning with Bandit and Safety
+- Documentation with Sphinx
+
+### Changed
+- Complete architectural refactor from monolithic to modular design
+- Improved error handling with custom exception classes
+- Enhanced logging with structured logging support
+
+### Fixed
+- Various parsing issues with malformed JSON responses
+- Memory leaks in long-running evaluations
+
+## [2.0.0] - 2024-01-15
+
+### Added
+- **Breaking Change**: Complete system refactor into modular architecture
+- New `SearchEvaluationEngine` class for orchestrating evaluations
+- `EvaluationRequest` and `EvaluationResult` dataclasses for type safety
+- Factory patterns for easy component creation and customization
+- Builder pattern for complex engine configuration
+- Comprehensive inventory analysis with `InventoryAnalyzer` class
+- Pluggable search classification system with `SearchClassifier` interface
+- Template-based prompt management with `PromptTemplateManager`
+- Structured response parsing with fallback mechanisms
+- Executive summary generation with business recommendations
+- Command-line interface with `click` framework
+- Docker support for containerized deployments
+- Comprehensive testing framework with pytest
+- CI/CD pipeline with GitHub Actions
+- Security scanning and dependency management
+- Structured logging with configurable levels and formats
+- Custom exception classes for better error handling
+- Performance monitoring and metrics collection
+
+### Changed
+- **Breaking Change**: Public API completely redesigned
+- Configuration now uses `LLMConfig` dataclass instead of global constants
+- Search type classification moved to dedicated `SearchClassifier` classes
+- Inventory parsing moved to dedicated `InventoryParser` class
+- Prompt generation moved to `PromptTemplateManager`
+- Response parsing moved to `ResponseParser` classes
+- All components now follow dependency injection pattern
+- Improved error handling with context-aware exceptions
+- Enhanced debugging capabilities with structured debug output
+
+### Deprecated
+- Old function-based API (maintained for backward compatibility)
+
+### Removed
+- Global configuration constants
+- Monolithic evaluation function
+- Hard-coded prompt templates
+
+### Fixed
+- JSON parsing issues with malformed LLM responses
+- Memory leaks in long-running evaluations
+- Inconsistent error handling across components
+- Race conditions in concurrent evaluations
+
+### Security
+- Added security scanning with Bandit
+- Dependency vulnerability scanning with Safety
+- Container security scanning with Trivy
+- Secrets detection in CI/CD pipeline
+
+## [1.0.0] - 2023-12-01
+
+### Added
+- Initial release with monolithic architecture
+- Basic LLM evaluation functionality
+- Simple inventory consideration
+- Support for part number and English word queries
+- Basic error handling and retry mechanisms
+- Simple configuration through environment variables
+
+### Features
+- Ollama integration for LLM inference
+- Basic prompt templates for different search types
+- Simple JSON response parsing
+- Inventory-aware ranking
+- Debug output capabilities
+
+---
+
+# CONTRIBUTING.md
+# Contributing to LLM Search Result Evaluation System
+
+Thank you for your interest in contributing! This document provides guidelines and information for contributors.
+
+## Table of Contents
+
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Contributing Process](#contributing-process)
+- [Code Standards](#code-standards)
+- [Testing](#testing)
+- [Documentation](#documentation)
+
+## Code of Conduct
+
+This project adheres to a code of conduct. By participating, you are expected to uphold this code.
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.8 or higher
+- Git
+- Docker (optional, for containerized development)
+
+### Development Setup
+
+1. Fork the repository
+2. Clone your fork:
+   ```bash
+   git clone https://github.com/your-username/llm-search-evaluator.git
+   cd llm-search-evaluator
+   ```
+
+3. Create a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+4. Install development dependencies:
+   ```bash
+   make install-dev
+   ```
+
+5. Set up pre-commit hooks:
+   ```bash
+   pre-commit install
+   ```
+
+6. Verify installation:
+   ```bash
+   make test
+   ```
+
+## Contributing Process
+
+1. **Create a branch** for your feature or bugfix:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make your changes** following the code standards
+
+3. **Add tests** for new functionality
+
+4. **Run quality checks**:
+   ```bash
+   make all-checks
+   ```
+
+5. **Commit your changes** with a descriptive message:
+   ```bash
+   git commit -m "feat: add new search classifier for ML-based classification"
+   ```
+
+6. **Push to your fork** and create a pull request
+
+## Code Standards
+
+### Python Style
+
+- Follow [PEP 8](https://www.python.org/dev/peps/pep-0008/)
+- Use [Black](https://github.com/psf/black) for code formatting
+- Use [isort](https://github.com/PyCQA/isort) for import sorting
+- Maximum line length: 100 characters
+
+### Type Hints
+
+- Use type hints for all function signatures
+- Use `typing` module for complex types
+- Use `Optional` for optional parameters
+
+### Documentation
+
+- Write docstrings for all public functions and classes
+- Use Google-style docstrings
+- Include examples in docstrings when helpful
+
+### Architecture
+
+- Follow SOLID principles
+- Use dependency injection
+- Prefer composition over inheritance
+- Keep classes focused and small
+
+## Testing
+
+### Test Structure
+
+- Unit tests: `tests/test_*.py`
+- Integration tests: `tests/test_integration.py`
+- Performance tests: `tests/test_performance.py`
+
+### Running Tests
+
+```bash
+# All tests
+make test
+
+# With coverage
+make test-cov
+
+# Specific test file
+pytest tests/test_inventory.py -v
+
+# Integration tests only
+pytest tests/test_integration.py -v -m integration
+```
+
+### Writing Tests
+
+- Write tests for all new functionality
+- Use descriptive test names
+- Use fixtures for common test data
+- Mock external dependencies
+- Test both success and failure cases
+
+## Documentation
+
+### Code Documentation
+
+- Write clear, concise docstrings
+- Include parameter and return type information
+- Provide usage examples
+
+### README Updates
+
+- Update README.md for significant changes
+- Include new configuration options
+- Update usage examples
+
+### API Documentation
+
+- Update API documentation for interface changes
+- Include migration guides for breaking changes
+
+## Release Process
+
+1. Update version in `pyproject.toml` and `__init__.py`
+2. Update `CHANGELOG.md`
+3. Create and push a git tag
+4. GitHub Actions will handle the rest
+
+## Getting Help
+
+- Open an issue for bugs or feature requests
+- Use GitHub Discussions for questions
+- Check existing issues and documentation first
+
+---
+
+# LICENSE
+MIT License
+
+Copyright (c) 2024 LLM Search Evaluator Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

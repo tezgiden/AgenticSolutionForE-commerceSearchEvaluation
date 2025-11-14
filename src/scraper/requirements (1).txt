@@ -1,0 +1,90 @@
+# Core dependencies for web scraping
+selenium>=4.15.0
+webdriver-manager>=4.0.0
+
+# Data processing and analysis
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# Configuration and data handling
+dataclasses-json>=0.6.0
+
+# Utilities and performance
+requests>=2.31.0
+urllib3>=2.0.0
+
+# Development and testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+
+# Logging and monitoring
+structlog>=23.0.0
+
+# Optional dependencies for enhanced features
+# Uncomment as needed:
+
+# For advanced data processing
+# numpy>=1.24.0
+# scipy>=1.10.0
+
+# For image processing (screenshots)
+# Pillow>=10.0.0
+
+# For database storage
+# sqlalchemy>=2.0.0
+# psycopg2-binary>=2.9.0  # PostgreSQL
+# pymongo>=4.0.0  # MongoDB
+
+# For API integrations
+# fastapi>=0.100.0
+# uvicorn>=0.23.0
+
+# For distributed processing
+# celery>=5.3.0
+# redis>=4.5.0
+
+# For machine learning features
+# scikit-learn>=1.3.0
+# tensorflow>=2.13.0
+
+# For advanced monitoring
+# prometheus-client>=0.17.0
+# grafana-api>=1.0.3
+
+# For cloud storage
+# boto3>=1.28.0  # AWS
+# google-cloud-storage>=2.10.0  # GCP
+# azure-storage-blob>=12.17.0  # Azure
+
+# For advanced parsing
+# beautifulsoup4>=4.12.0
+# lxml>=4.9.0
+# html5lib>=1.1
+
+# For networking and proxies
+# requests[socks]>=2.31.0
+# fake-useragent>=1.4.0
+
+# For configuration management
+# pydantic>=2.0.0
+# python-dotenv>=1.0.0
+
+# For caching
+# redis>=4.5.0
+# memcached>=1.6.0
+
+# For job queuing
+# rq>=1.15.0
+# dramatiq>=1.14.0
+
+# Development tools
+black>=23.0.0
+isort>=5.12.0
+flake8>=6.0.0
+mypy>=1.5.0
+pre-commit>=3.3.0
+
+# Documentation
+sphinx>=7.0.0
+sphinx-rtd-theme>=1.3.0
