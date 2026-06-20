@@ -1,0 +1,422 @@
+{
+  "_comment": "Enterprise Web Scraper Configuration Examples",
+  "_description": "This file contains configuration examples for different sites and scenarios",
+  
+  "sites": {
+    "truckpro": {
+      "site_name": "TruckPro",
+      "target_url": "https://www.truckpro.com/",
+      "search_tasks": [
+        {
+          "search_term": "brake pads",
+          "expected_results": 5,
+          "priority": "high"
+        },
+        {
+          "search_term": "oil filter",
+          "expected_results": 3,
+          "priority": "medium"
+        }
+      ],
+      "inventory_test_cases": [
+        {
+          "part_number": "BK608",
+          "expected_availability": true,
+          "test_frequency": "daily"
+        }
+      ],
+      "scraping": {
+        "search_input_selectors": [
+          "#searchInput",
+          "input[placeholder=\"Search name, sku, item #\"]",
+          "input[type=\"search\"]",
+          "input.search-input"
+        ],
+        "search_button_selectors": [
+          "//button[contains(@class, 'search-bar__button')]",
+          "//button[normalize-space()=\"Search\"]",
+          "//button[contains(@class, 'search')]",
+          "//button[contains(@class, 'search-button')]"
+        ],
+        "product_card_selectors": [
+          "div.productlist",
+          "div.product-card",
+          "div.search-result-item"
+        ],
+        "product_link_selector": "a.link",
+        "product_title_selectors": [
+          "div.name.longName",
+          "h3.name.longName"
+        ],
+        "product_sku_selectors": [
+          "span.sku-text",
+          "span.vendor-value"
+        ],
+        "product_price_selectors": [
+          "span.formatted-price",
+          "div.price-wrapper"
+        ],
+        "product_quantity_selectors": [
+          "span.inventory-available"
+        ],
+        "badges_selectors": [
+          "ul.product-badges li div.badges.partial-match span"
+        ],
+        "exact_match_selectors": [
+          "ul.product-badges li div.badges.exact-match span"
+        ],
+        "no_results_selectors": [
+          "div.message-alert.info.p-3.message-no-item-alert",
+          "div.message-no-item-alert",
+          "div.message-alert"
+        ],
+        "max_results_per_query": 10,
+        "wait_timeout": 10,
+        "page_load_timeout": 30
+      },
+      "output": {
+        "output_file": "truckpro_results.json",
+        "detailed_output_file": "truckpro_detailed_results.json"
+      }
+    },
+    
+    "example_ecommerce": {
+      "_comment": "Generic e-commerce site configuration example",
+      "site_name": "Example E-commerce",
+      "target_url": "https://shop.example.com/",
+      "search_tasks": [],
+      "inventory_test_cases": [],
+      "scraping": {
+        "search_input_selectors": [
+          "#search-input",
+          "input[name='search']",
+          "input[placeholder*='Search']",
+          ".search-box input"
+        ],
+        "search_button_selectors": [
+          "//button[@type='submit']",
+          "//button[contains(text(), 'Search')]",
+          "//input[@type='submit']",
+          ".search-button"
+        ],
+        "product_card_selectors": [
+          ".product-item",
+          ".product-card",
+          "[data-testid='product-card']",
+          ".search-result"
+        ],
+        "product_link_selector": "a.product-link, a[href*='/product/']",
+        "product_title_selectors": [
+          ".product-title",
+          "h3.product-name",
+          ".item-title",
+          "[data-testid='product-title']"
+        ],
+        "product_sku_selectors": [
+          ".product-sku",
+          ".item-number",
+          "[data-testid='sku']"
+        ],
+        "product_price_selectors": [
+          ".price",
+          ".product-price",
+          ".current-price",
+          "[data-testid='price']"
+        ],
+        "product_quantity_selectors": [
+          ".stock-level",
+          ".inventory-count",
+          "[data-testid='stock']"
+        ],
+        "badges_selectors": [
+          ".badge",
+          ".product-badge",
+          ".item-flag"
+        ],
+        "exact_match_selectors": [
+          ".exact-match-badge"
+        ],
+        "no_results_selectors": [
+          ".no-results",
+          ".empty-results",
+          "[data-testid='no-results']",
+          ".search-no-results"
+        ],
+        "max_results_per_query": 20,
+        "wait_timeout": 15,
+        "page_load_timeout": 45
+      },
+      "output": {
+        "output_file": "ecommerce_results.json",
+        "detailed_output_file": "ecommerce_detailed_results.json"
+      }
+    },
+    
+    "marketplace_site": {
+      "_comment": "Configuration for marketplace-style sites with multiple vendors",
+      "site_name": "Marketplace Example",
+      "target_url": "https://marketplace.example.com/",
+      "search_tasks": [],
+      "inventory_test_cases": [],
+      "scraping": {
+        "search_input_selectors": [
+          "#marketplace-search",
+          "input[aria-label*='Search']"
+        ],
+        "search_button_selectors": [
+          "//button[@aria-label='Search']",
+          "//button[contains(@class, 'search-submit')]"
+        ],
+        "product_card_selectors": [
+          "[data-component='product-card']",
+          ".marketplace-item"
+        ],
+        "product_link_selector": "a[data-testid='product-link']",
+        "product_title_selectors": [
+          "h2[data-testid='product-title']",
+          ".product-title-link"
+        ],
+        "product_sku_selectors": [
+          "[data-testid='product-id']",
+          ".marketplace-sku"
+        ],
+        "product_price_selectors": [
+          "[data-testid='price-current']",
+          ".price-display"
+        ],
+        "product_quantity_selectors": [
+          "[data-testid='availability']",
+          ".stock-indicator"
+        ],
+        "badges_selectors": [
+          ".product-badges [data-testid='badge']"
+        ],
+        "exact_match_selectors": [
+          "[data-testid='exact-match']"
+        ],
+        "no_results_selectors": [
+          "[data-testid='no-search-results']",
+          ".empty-search-state"
+        ],
+        "max_results_per_query": 25,
+        "wait_timeout": 20,
+        "page_load_timeout": 60
+      },
+      "output": {
+        "output_file": "marketplace_results.json",
+        "detailed_output_file": "marketplace_detailed_results.json"
+      }
+    },
+
+    "ajax_heavy_site": {
+      "_comment": "Configuration for sites with heavy AJAX/dynamic content",
+      "site_name": "AJAX Heavy Site",
+      "target_url": "https://spa.example.com/",
+      "search_tasks": [],
+      "inventory_test_cases": [],
+      "scraping": {
+        "search_input_selectors": [
+          "input[data-cy='search-input']",
+          ".react-search-input"
+        ],
+        "search_button_selectors": [
+          "//button[@data-cy='search-button']",
+          "//button[contains(@class, 'search-trigger')]"
+        ],
+        "product_card_selectors": [
+          "[data-testid*='product']",
+          ".dynamic-product-card"
+        ],
+        "product_link_selector": "a[data-analytics='product-click']",
+        "product_title_selectors": [
+          "[data-field='title']",
+          ".product-name-dynamic"
+        ],
+        "product_sku_selectors": [
+          "[data-field='sku']",
+          ".dynamic-sku"
+        ],
+        "product_price_selectors": [
+          "[data-field='price']",
+          ".price-component"
+        ],
+        "product_quantity_selectors": [
+          "[data-field='stock']",
+          ".inventory-status"
+        ],
+        "badges_selectors": [
+          "[data-field='badges'] .badge-item"
+        ],
+        "exact_match_selectors": [
+          ".match-indicator[data-match='exact']"
+        ],
+        "no_results_selectors": [
+          ".no-results-component",
+          "[data-testid='empty-state']"
+        ],
+        "max_results_per_query": 15,
+        "wait_timeout": 25,
+        "page_load_timeout": 90
+      },
+      "output": {
+        "output_file": "ajax_site_results.json",
+        "detailed_output_file": "ajax_site_detailed_results.json"
+      }
+    }
+  },
+
+  "chrome": {
+    "_comment": "Chrome browser configuration",
+    "chrome_driver_path": null,
+    "headless": true,
+    "window_size": {
+      "width": 1280,
+      "height": 720
+    },
+    "implicit_wait": 3,
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  },
+
+  "chrome_development": {
+    "_comment": "Chrome configuration for development (non-headless)",
+    "chrome_driver_path": null,
+    "headless": false,
+    "window_size": {
+      "width": 1920,
+      "height": 1080
+    },
+    "implicit_wait": 5,
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  },
+
+  "llm": {
+    "_comment": "LLM configuration for enhanced analysis (optional)",
+    "ollama_api_endpoint": "http://localhost:11434",
+    "default_model": "llama2",
+    "timeout": 30,
+    "max_retries": 3
+  },
+
+  "evaluation": {
+    "_comment": "Evaluation and ranking configuration",
+    "enable_inventory_ranking": true,
+    "enable_detailed_analysis": false,
+    "inventory_weight_factor": 0.3,
+    "apply_post_ranking": true,
+    "low_stock_threshold": 5
+  },
+
+  "deployment": {
+    "_comment": "Deployment and operational settings",
+    "environment": "production",
+    "log_level": "INFO",
+    "enable_screenshots": false,
+    "delay_between_searches": 2,
+    "enable_metrics_collection": true,
+    "batch_size": 10,
+    "max_concurrent": 3
+  },
+
+  "deployment_development": {
+    "_comment": "Development environment settings",
+    "environment": "development",
+    "log_level": "DEBUG",
+    "enable_screenshots": true,
+    "delay_between_searches": 1,
+    "enable_metrics_collection": true,
+    "batch_size": 5,
+    "max_concurrent": 2
+  },
+
+  "rate_limiting": {
+    "_comment": "Rate limiting configuration per domain",
+    "default": {
+      "requests_per_second": 1.0,
+      "requests_per_minute": 60,
+      "requests_per_hour": 3600,
+      "burst_allowance": 5,
+      "strategy": "token_bucket"
+    },
+    "domains": {
+      "truckpro.com": {
+        "requests_per_second": 1.5,
+        "requests_per_minute": 80,
+        "burst_allowance": 8
+      },
+      "example.com": {
+        "requests_per_second": 0.5,
+        "requests_per_minute": 30,
+        "burst_allowance": 3
+      }
+    }
+  },
+
+  "monitoring_thresholds": {
+    "_comment": "Performance monitoring alert thresholds",
+    "min_success_rate": 85.0,
+    "max_avg_duration": 20.0,
+    "max_error_rate": 10.0,
+    "max_response_time": 30.0
+  },
+
+  "result_processing": {
+    "_comment": "Result processing pipeline configuration",
+    "validation": {
+      "enabled": true,
+      "strict_mode": false,
+      "required_fields": ["title", "url"]
+    },
+    "cleaning": {
+      "enabled": true,
+      "clean_whitespace": true,
+      "normalize_prices": true,
+      "clean_urls": true
+    },
+    "enrichment": {
+      "enabled": true,
+      "add_metadata": true,
+      "calculate_scores": true
+    },
+    "filtering": {
+      "enabled": true,
+      "filter_invalid": false,
+      "min_title_length": 5,
+      "require_price": false,
+      "require_quantity": false
+    },
+    "deduplication": {
+      "enabled": true,
+      "dedupe_by": ["url", "part_number"],
+      "group_by": null
+    }
+  },
+
+  "testing": {
+    "_comment": "Testing configuration",
+    "test_sites": ["truckpro", "example_ecommerce"],
+    "test_search_terms": ["test", "example", "sample"],
+    "mock_data_enabled": false,
+    "test_timeout": 30
+  },
+
+  "_configuration_notes": {
+    "selector_strategies": [
+      "Use multiple selectors as fallbacks for reliability",
+      "Prefer data-testid attributes when available",
+      "Use CSS selectors for simple cases, XPath for complex logic",
+      "Test selectors in browser dev tools before adding to config"
+    ],
+    "performance_tips": [
+      "Set appropriate timeouts based on site performance",
+      "Use headless mode for production to save resources",
+      "Configure rate limiting to be respectful to target sites",
+      "Enable metrics collection for operational insights"
+    ],
+    "maintenance": [
+      "Review and update selectors regularly as sites change",
+      "Monitor performance metrics and adjust thresholds",
+      "Test configuration changes in development environment first",
+      "Keep backup configurations for critical sites"
+    ]
+  }
+}

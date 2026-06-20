@@ -1,0 +1,1310 @@
+"""
+Web scraping module for e-commerce sites.
+
+This module provides a clean, maintainable architecture for web scraping
+with proper separation of concerns, robust error handling, and extensibility.
+"""
+
+import os
+import re
+import time
+from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import List, Dict, Any, Optional, Protocol
+from contextlib import contextmanager
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import (
+    NoSuchElementException, 
+    TimeoutException, 
+    WebDriverException,
+    ElementNotInteractableException
+)
+
+from models.data_models import ProductData
+from config.config_loader import SiteConfig, ChromeConfig, ScrapingConfig
+
+
+# ========================
+# Custom Exceptions
+# ========================
+
+class ScrapingError(Exception):
+    """Base exception for scraping-related errors."""
+    pass
+
+
+class WebDriverSetupError(ScrapingError):
+    """Raised when WebDriver setup fails."""
+    pass
+
+
+class NavigationError(ScrapingError):
+    """Raised when navigation to target site fails."""
+    pass
+
+
+class SearchError(ScrapingError):
+    """Raised when search operation fails."""
+    pass
+
+
+class DataExtractionError(ScrapingError):
+    """Raised when data extraction fails."""
+    pass
+
+
+# ========================
+# Interfaces and Protocols
+# ========================
+
+class WebDriverManager(Protocol):
+    """Protocol for WebDriver management."""
+    
+    def create_driver(self) -> webdriver.Chrome:
+        """Create and configure WebDriver instance."""
+        ...
+    
+    def cleanup_driver(self, driver: webdriver.Chrome) -> None:
+        """Clean up WebDriver resources."""
+        ...
+
+
+class ElementLocator(Protocol):
+    """Protocol for element location strategies."""
+    
+    def find_element(self, driver: webdriver.Chrome, selectors: List[str], 
+                    timeout: int = 5) -> Optional[webdriver.remote.webelement.WebElement]:
+        """Find element using multiple selectors."""
+        ...
+    
+    def find_elements(self, driver: webdriver.Chrome, selectors: List[str], 
+                     timeout: int = 5) -> List[webdriver.remote.webelement.WebElement]:
+        """Find elements using multiple selectors."""
+        ...
+
+
+class DataExtractor(Protocol):
+    """Protocol for data extraction from web elements."""
+    
+    def extract_product_data(self, element: webdriver.remote.webelement.WebElement, 
+                           config: ScrapingConfig, index: int) -> ProductData:
+        """Extract product data from web element."""
+        ...
+
+
+# ========================
+# Chrome WebDriver Management
+# ========================
+
+class ChromeDriverManager:
+    """Manages Chrome WebDriver setup and configuration."""
+    
+    def __init__(self, chrome_config: ChromeConfig):
+        self.config = chrome_config
+    
+    def create_driver(self) -> webdriver.Chrome:
+        """Create and configure Chrome WebDriver instance."""
+        try:
+            chrome_options = self._create_chrome_options()
+            service = self._create_chrome_service()
+            
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+            self._configure_driver(driver)
+            
+            print("WebDriver setup successful")
+            return driver
+            
+        except Exception as e:
+            raise WebDriverSetupError(f"Failed to setup WebDriver: {e}")
+    
+    def cleanup_driver(self, driver: webdriver.Chrome) -> None:
+        """Clean up WebDriver resources."""
+        try:
+            if driver:
+                driver.quit()
+                print("WebDriver cleanup successful")
+        except Exception as e:
+            print(f"Warning: WebDriver cleanup failed: {e}")
+    
+    def _create_chrome_options(self) -> Options:
+        """Create Chrome options with optimized settings."""
+        chrome_options = Options()
+        
+        # Basic configuration
+        if self.config.headless:
+            chrome_options.add_argument("--headless=new")
+        
+        # Performance and stability arguments
+        stability_args = [
+            "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu",
+            "--disable-gpu-sandbox", "--disable-software-rasterizer",
+            "--disable-3d-apis", "--disable-background-timer-throttling",
+            "--disable-renderer-backgrounding", "--disable-features=TranslateUI",
+            "--disable-features=VizDisplayCompositor", "--use-gl=disabled",
+            "--disable-gl-drawing-for-tests", "--no-proxy-server",
+            "--disable-web-security", "--disable-features=NetworkService"
+        ]
+        
+        # Security arguments
+        security_args = [
+            "--ignore-certificate-errors", "--ignore-ssl-errors",
+            "--allow-running-insecure-content", "--ignore-certificate-errors-spki-list",
+            "--ignore-urlfetcher-cert-requests"
+        ]
+        
+        # Performance optimization arguments
+        performance_args = [
+            "--disable-extensions", "--disable-plugins", "--disable-images",
+            "--disable-setuid-sandbox", "--no-first-run", "--no-default-browser-check",
+            "--disable-default-apps", "--memory-pressure-off", "--max_old_space_size=4096"
+        ]
+        
+        # Apply all arguments
+        for arg_list in [stability_args, security_args, performance_args]:
+            for arg in arg_list:
+                chrome_options.add_argument(arg)
+        
+        # User agent
+        chrome_options.add_argument(f"user-agent={self.config.user_agent}")
+        
+        # Experimental options
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-logging', 'enable-automation'])
+        chrome_options.add_experimental_option('useAutomationExtension', False)
+        chrome_options.add_experimental_option('prefs', {
+            'profile.default_content_setting_values.notifications': 2,
+            'profile.default_content_settings.popups': 0,
+            'profile.managed_default_content_settings.images': 2
+        })
+        
+        return chrome_options
+    
+    def _create_chrome_service(self) -> Service:
+        """Create Chrome service with proper configuration."""
+        if self.config.chrome_driver_path is None:
+            try:
+                from webdriver_manager.chrome import ChromeDriverManager
+                service = Service(ChromeDriverManager().install())
+                print("Using webdriver-manager for Chrome driver")
+            except ImportError:
+                raise WebDriverSetupError(
+                    "webdriver-manager not installed. Install it or specify chrome_driver_path in config."
+                )
+        else:
+            service = Service(self.config.chrome_driver_path)
+        
+        # Windows-specific configuration
+        service.creation_flags = 0x08000000  # CREATE_NO_WINDOW flag
+        return service
+    
+    def _configure_driver(self, driver: webdriver.Chrome) -> None:
+        """Configure driver with settings from config."""
+        driver.set_window_size(
+            self.config.window_size["width"], 
+            self.config.window_size["height"]
+        )
+        driver.implicitly_wait(self.config.implicit_wait)
+
+
+# ========================
+# Element Location Strategies
+# ========================
+
+class MultiSelectorElementLocator:
+    """Locates elements using multiple selector strategies."""
+    
+    def find_element(self, driver: webdriver.Chrome, selectors: List[str], 
+                    by: By = By.CSS_SELECTOR, wait_for_interactable: bool = False, 
+                    timeout: int = 5) -> Optional[webdriver.remote.webelement.WebElement]:
+        """Find element using multiple selectors with fallback strategy."""
+        for selector in selectors:
+            try:
+                if wait_for_interactable:
+                    element = WebDriverWait(driver, timeout).until(
+                        EC.element_to_be_clickable((by, selector))
+                    )
+                else:
+                    element = WebDriverWait(driver, timeout).until(
+                        EC.presence_of_element_located((by, selector))
+                    )
+                print(f"Found element with selector: {selector}")
+                return element
+            except TimeoutException:
+                continue
+            except Exception as e:
+                print(f"Error with selector {selector}: {e}")
+                continue
+        return None
+    
+    def find_elements(self, driver: webdriver.Chrome, selectors: List[str], 
+                     timeout: int = 5) -> List[webdriver.remote.webelement.WebElement]:
+        """Find elements using multiple selectors."""
+        for selector in selectors:
+            try:
+                elements = driver.find_elements(By.CSS_SELECTOR, selector)
+                if elements:
+                    print(f"Found {len(elements)} elements using selector: {selector}")
+                    return elements
+            except Exception as e:
+                print(f"Error with selector '{selector}': {e}")
+                continue
+        return []
+
+
+# ========================
+# Page Interaction Handlers
+# ========================
+
+class PageLoadHandler:
+    """Handles page loading and waiting strategies."""
+    
+    @staticmethod
+    def wait_for_page_load(driver: webdriver.Chrome, timeout: int = 10) -> None:
+        """Wait for page to fully load with loading indicator handling."""
+        try:
+            # Wait for basic page load
+            WebDriverWait(driver, timeout).until(
+                lambda d: d.execute_script("return document.readyState") == "complete"
+            )
+            
+            # Wait for loading indicators to disappear
+            loading_selectors = [
+                ".loading", ".spinner", ".loader", 
+                "[data-loading='true']", ".loading-overlay"
+            ]
+            
+            for selector in loading_selectors:
+                try:
+                    WebDriverWait(driver, 3).until(
+                        EC.invisibility_of_element_located((By.CSS_SELECTOR, selector))
+                    )
+                except TimeoutException:
+                    continue
+                    
+        except Exception as e:
+            print(f"Warning: Page load wait issue: {e}")
+
+
+class ModalHandler:
+    """Handles modal popups and overlays."""
+    
+    MODAL_SELECTORS = [
+        "div.modal.show", "div.modal-wrapper.show", 
+        "div[role='dialog'][aria-modal='true']",
+        ".newsletter-modal.show", ".popup-modal.show",
+        "#cookie-banner", ".cookie-consent", ".gdpr-banner",
+        ".overlay.show", ".modal-overlay.show"
+    ]
+    
+    CLOSE_BUTTON_SELECTORS = [
+        "button.close", "button[aria-label='Close']", 
+        "button[data-dismiss='modal']", ".modal-close", 
+        ".close-button", "[data-close-modal]", "button.btn-close",
+        "span.close", ".fa-times", ".fa-close"
+    ]
+    
+    @classmethod
+    def handle_modals(cls, driver: webdriver.Chrome) -> None:
+        """Handle common modal popups that might interfere with scraping."""
+        try:
+            for modal_selector in cls.MODAL_SELECTORS:
+                try:
+                    modals = driver.find_elements(By.CSS_SELECTOR, modal_selector)
+                    for modal in modals:
+                        if modal.is_displayed():
+                            print(f"Found visible modal: {modal_selector}")
+                            
+                            if cls._try_close_modal(modal, driver):
+                                return
+                            
+                except NoSuchElementException:
+                    continue
+            
+            # Fallback: press Escape key
+            cls._try_escape_key(driver)
+            
+        except Exception as e:
+            print(f"Error handling modals: {e}")
+    
+    @classmethod
+    def _try_close_modal(cls, modal: webdriver.remote.webelement.WebElement, 
+                        driver: webdriver.Chrome) -> bool:
+        """Try to close modal using various strategies."""
+        # Try finding close button
+        for close_selector in cls.CLOSE_BUTTON_SELECTORS:
+            try:
+                if close_selector.startswith("button:contains"):
+                    # Handle manual X button search
+                    close_buttons = modal.find_elements(By.TAG_NAME, "button")
+                    for btn in close_buttons:
+                        if any(char in btn.text for char in ["×", "X"]):
+                            btn.click()
+                            print("Closed modal using X button")
+                            time.sleep(1)
+                            return True
+                else:
+                    close_button = modal.find_element(By.CSS_SELECTOR, close_selector)
+                    if close_button.is_displayed():
+                        close_button.click()
+                        print(f"Closed modal using: {close_selector}")
+                        time.sleep(1)
+                        return True
+            except NoSuchElementException:
+                continue
+        
+        # Fallback: hide with JavaScript
+        try:
+            driver.execute_script("arguments[0].style.display = 'none';", modal)
+            print("Hid modal using JavaScript")
+            time.sleep(1)
+            return True
+        except Exception:
+            pass
+        
+        return False
+    
+    @classmethod
+    def _try_escape_key(cls, driver: webdriver.Chrome) -> None:
+        """Try closing modals with Escape key."""
+        try:
+            driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.ESCAPE)
+            print("Attempted to close modals with Escape key")
+            time.sleep(1)
+        except Exception:
+            pass
+
+
+# ========================
+# Search Operation Handler
+# ========================
+
+class SearchHandler:
+    """Handles search operations on e-commerce sites."""
+    
+    def __init__(self, element_locator: ElementLocator):
+        self.element_locator = element_locator
+    
+    def perform_search(self, driver: webdriver.Chrome, search_term: str, 
+                      config: ScrapingConfig) -> None:
+        """Perform search operation with comprehensive error handling."""
+        try:
+            self._enter_search_term(driver, search_term, config)
+            self._execute_search(driver, config)
+        except Exception as e:
+            raise SearchError(f"Search operation failed for term '{search_term}': {e}")
+    
+    def _enter_search_term(self, driver: webdriver.Chrome, search_term: str, 
+                          config: ScrapingConfig) -> None:
+        """Enter search term into search input field."""
+        print("Looking for search input...")
+        search_input = self.element_locator.find_element(
+            driver, 
+            config.search_input_selectors,
+            wait_for_interactable=True,
+            timeout=config.wait_timeout
+        )
+        
+        if not search_input:
+            self._debug_search_inputs(driver)
+            raise SearchError("Could not find search input with any configured selector")
+        
+        try:
+            search_input.clear()
+            search_input.send_keys(search_term)
+            print(f"Entered search term: {search_term}")
+        except ElementNotInteractableException as e:
+            raise SearchError(f"Search input not interactable: {e}")
+    
+    def _execute_search(self, driver: webdriver.Chrome, config: ScrapingConfig) -> None:
+        """Execute search by clicking search button or pressing Enter."""
+        print("Looking for search button...")
+        
+        # Handle any modals that might have appeared
+        ModalHandler.handle_modals(driver)
+        
+        search_button = self.element_locator.find_element(
+            driver,
+            config.search_button_selectors,
+            by=By.XPATH,
+            timeout=5
+        )
+        
+        if search_button:
+            self._click_search_button(search_button, driver)
+        else:
+            self._use_enter_key_fallback(driver)
+    
+    def _click_search_button(self, search_button: webdriver.remote.webelement.WebElement, 
+                           driver: webdriver.Chrome) -> None:
+        """Click search button with fallback strategies."""
+        try:
+            WebDriverWait(driver, 5).until(EC.element_to_be_clickable(search_button))
+            search_button.click()
+            print("Clicked search button successfully")
+        except Exception as click_error:
+            print(f"Error clicking search button: {click_error}")
+            # Try JavaScript click as fallback
+            try:
+                driver.execute_script("arguments[0].click();", search_button)
+                print("Used JavaScript click as fallback")
+            except Exception as js_error:
+                print(f"JavaScript click failed: {js_error}")
+                self._use_enter_key_fallback(driver)
+    
+    def _use_enter_key_fallback(self, driver: webdriver.Chrome) -> None:
+        """Use Enter key as fallback search method."""
+        try:
+            # Find any search input and press Enter
+            search_inputs = driver.find_elements(By.CSS_SELECTOR, "input[type='search'], input[name*='search']")
+            if search_inputs:
+                search_inputs[0].send_keys(Keys.RETURN)
+                print("Used Enter key for search")
+            else:
+                raise SearchError("No search method available")
+        except Exception as e:
+            raise SearchError(f"Enter key fallback failed: {e}")
+    
+    def _debug_search_inputs(self, driver: webdriver.Chrome) -> None:
+        """Debug helper to show available input elements."""
+        inputs = driver.find_elements(By.TAG_NAME, "input")
+        print(f"Found {len(inputs)} input elements on page")
+        for i, inp in enumerate(inputs[:5]):  # Show first 5
+            input_type = inp.get_attribute('type') or 'text'
+            placeholder = inp.get_attribute('placeholder') or ''
+            name = inp.get_attribute('name') or ''
+            id_attr = inp.get_attribute('id') or ''
+            print(f"Input {i}: type='{input_type}', placeholder='{placeholder}', name='{name}', id='{id_attr}'")
+
+
+# ========================
+# Result Detection
+# ========================
+
+class ResultDetector:
+    """Detects search results and no-results conditions."""
+    
+    def __init__(self, element_locator: ElementLocator):
+        self.element_locator = element_locator
+    
+    def has_no_results(self, driver: webdriver.Chrome, search_term: str, 
+                      config: ScrapingConfig) -> bool:
+        """Check if search returned no results."""
+        try:
+            for no_results_selector in config.no_results_selectors:
+                try:
+                    no_results_element = driver.find_element(By.CSS_SELECTOR, no_results_selector)
+                    if no_results_element.is_displayed():
+                        element_text = no_results_element.text.lower()
+                        
+                        if self._contains_no_results_indicators(element_text, search_term):
+                            print(f"No results detected: {element_text.strip()}")
+                            return True
+                            
+                except NoSuchElementException:
+                    continue
+            
+            return False
+            
+        except Exception as e:
+            print(f"Error checking for no results: {e}")
+            return False
+    
+    def find_product_cards(self, driver: webdriver.Chrome, 
+                          config: ScrapingConfig) -> List[webdriver.remote.webelement.WebElement]:
+        """Find product cards on the page."""
+        product_cards = self.element_locator.find_elements(
+            driver, 
+            config.product_card_selectors,
+            timeout=10
+        )
+        
+        if not product_cards:
+            self._debug_potential_cards(driver)
+        
+        return product_cards
+    
+    def _contains_no_results_indicators(self, element_text: str, search_term: str) -> bool:
+        """Check if element text contains no-results indicators."""
+        no_results_indicators = [
+            "0 results", "no results", "returned 0 results",
+            "no items found", "no products found"
+        ]
+        
+        # Check for search term specific indicator
+        search_specific = f"results for \"{search_term.lower()}\""
+        if search_specific in element_text and "0" in element_text:
+            return True
+        
+        return any(indicator in element_text for indicator in no_results_indicators)
+    
+    def _debug_potential_cards(self, driver: webdriver.Chrome) -> None:
+        """Debug helper to find potential product card selectors."""
+        potential_selectors = [
+            "div[class*='product']", "div[class*='item']", "div[class*='result']",
+            "article", "li[class*='product']", ".product", ".item", ".result"
+        ]
+        
+        for debug_selector in potential_selectors:
+            try:
+                debug_cards = driver.find_elements(By.CSS_SELECTOR, debug_selector)
+                if debug_cards:
+                    print(f"DEBUG: Found {len(debug_cards)} elements with selector '{debug_selector}'")
+            except Exception:
+                continue
+
+
+# ========================
+# Data Extraction Components
+# ========================
+
+class TextExtractor:
+    """Utility class for extracting and cleaning text from web elements."""
+    
+    @staticmethod
+    def extract_sku_from_element(element: webdriver.remote.webelement.WebElement) -> str:
+        """Extract SKU from complex HTML structures."""
+        try:
+            # Method 1: Check for hidden input with SKU value
+            try:
+                hidden_input = element.find_element(By.CSS_SELECTOR, "input[name='sku-id']")
+                return hidden_input.get_attribute("value")
+            except NoSuchElementException:
+                pass
+            
+            # Method 2: Extract from vendor-value spans
+            try:
+                vendor_value = element.find_element(By.CSS_SELECTOR, "span.vendor-value")
+                spans = vendor_value.find_elements(By.CSS_SELECTOR, "span:not(.d-none)")
+                sku_parts = []
+                
+                for span in spans:
+                    text = span.text.strip()
+                    if text and not any(char in text for char in ['✓', '☑', '✔']):
+                        sku_parts.append(text)
+                
+                if sku_parts:
+                    return ''.join(sku_parts)
+            except NoSuchElementException:
+                pass
+            
+            # Method 3: Fallback to text content
+            full_text = element.text.strip()
+            return full_text.replace('✓', '').replace('☑', '').replace('✔', '').strip()
+            
+        except Exception:
+            return element.text.strip()
+    
+    @staticmethod
+    def extract_price_from_element(element: webdriver.remote.webelement.WebElement) -> str:
+        """Extract price from complex HTML structures."""
+        try:
+            element_class = element.get_attribute("class") or ""
+            
+            if "price-wrapper" in element_class:
+                spans = element.find_elements(By.TAG_NAME, "span")
+                price_parts = []
+                
+                for span in spans:
+                    text = span.text.strip()
+                    if text and not (text.startswith("(") and text.endswith(")")):
+                        price_parts.append(text)
+                
+                if len(price_parts) >= 2:
+                    dollars = price_parts[0].replace("$", "")
+                    cents = price_parts[1]
+                    return f"{dollars}.{cents}"
+            
+            return element.text.strip()
+            
+        except Exception:
+            return element.text.strip()
+    
+    @staticmethod
+    def extract_quantity_from_element(element: webdriver.remote.webelement.WebElement) -> Optional[int]:
+        """Extract quantity from HTML element."""
+        try:
+            quantity_text = element.text.strip()
+            digits = ''.join(filter(str.isdigit, quantity_text))
+            return int(digits) if digits else None
+        except Exception:
+            return None
+    
+    @staticmethod
+    def clean_sku_text(sku_text: str) -> str:
+        """Clean SKU text by removing unwanted prefixes."""
+        if not sku_text:
+            return "N/A"
+        
+        prefixes_to_remove = ["Vendor Part #:", "SKU:", "Part #:"]
+        
+        for prefix in prefixes_to_remove:
+            if prefix in sku_text:
+                sku_text = sku_text.split(prefix)[-1].strip()
+                break
+        
+        return sku_text.strip()
+
+
+class ProductDataExtractor:
+    """Extracts product data from web elements."""
+    
+    def __init__(self, element_locator: ElementLocator):
+        self.element_locator = element_locator
+        self.text_extractor = TextExtractor()
+    
+    def extract_product_data(self, element: webdriver.remote.webelement.WebElement, 
+                           config: ScrapingConfig, index: int, 
+                           debug: bool = False) -> ProductData:
+        """Extract complete product data from web element."""
+        product_data = ProductData()
+        
+        if debug:
+            self._debug_product_structure(element, index)
+        
+        try:
+            self._extract_title_and_url(element, product_data, config)
+            self._extract_part_numbers(element, product_data, config)
+            self._extract_price(element, product_data, config)
+            self._extract_quantity(element, product_data, config)
+            self._extract_badges(element, product_data, config)
+            
+        except Exception as e:
+            print(f"Error extracting data from product {index}: {e}")
+        
+        return product_data
+    
+    def _extract_title_and_url(self, element: webdriver.remote.webelement.WebElement, 
+                              product_data: ProductData, config: ScrapingConfig) -> None:
+        """Extract title and URL from product element."""
+        title_found = False
+        url_found = False
+        
+        # Try configured selectors
+        for title_selector in config.product_title_selectors:
+            try:
+                title_element = element.find_element(By.CSS_SELECTOR, title_selector)
+                if title_element.text.strip():
+                    product_data.title = title_element.text.strip()
+                    title_found = True
+                    break
+            except NoSuchElementException:
+                continue
+        
+        # Try to find URL using link selector
+        try:
+            link_element = element.find_element(By.CSS_SELECTOR, config.product_link_selector)
+            href = link_element.get_attribute("href")
+            if href:
+                product_data.url = href
+                url_found = True
+                
+                if not title_found and link_element.text.strip():
+                    product_data.title = link_element.text.strip()
+                    title_found = True
+        except NoSuchElementException:
+            pass
+        
+        # Fallback: search all links
+        if not title_found or not url_found:
+            self._extract_from_any_link(element, product_data, title_found, url_found)
+    
+    def _extract_from_any_link(self, element: webdriver.remote.webelement.WebElement, 
+                              product_data: ProductData, title_found: bool, url_found: bool) -> None:
+        """Extract title/URL from any available link as fallback."""
+        all_links = element.find_elements(By.TAG_NAME, "a")
+        
+        for link in all_links:
+            href = link.get_attribute("href")
+            link_text = link.text.strip()
+            
+            if not href or any(skip in href.lower() for skip in ['mailto:', 'tel:', 'javascript:', '#']):
+                continue
+            
+            # Priority for product-like links
+            if any(indicator in href.lower() for indicator in ['/product/', '/item/', '/p/', '/details/']):
+                if not url_found:
+                    product_data.url = href
+                    url_found = True
+                
+                if not title_found and link_text:
+                    product_data.title = link_text
+                    title_found = True
+                
+                if title_found and url_found:
+                    break
+    
+    def _extract_part_numbers(self, element: webdriver.remote.webelement.WebElement, 
+                             product_data: ProductData, config: ScrapingConfig) -> None:
+        """Extract part numbers from product element."""
+        sku_elements = []
+        for sku_selector in config.product_sku_selectors:
+            try:
+                elements = element.find_elements(By.CSS_SELECTOR, sku_selector)
+                sku_elements.extend(elements)
+            except Exception:
+                continue
+        
+        # Extract part numbers from found elements
+        if sku_elements:
+            if len(sku_elements) > 0:
+                part_number = self.text_extractor.extract_sku_from_element(sku_elements[0])
+                if part_number:
+                    product_data.part_number = self.text_extractor.clean_sku_text(part_number)
+            
+            if len(sku_elements) > 1:
+                vendor_part_number = self.text_extractor.extract_sku_from_element(sku_elements[1])
+                if vendor_part_number:
+                    product_data.vendor_part_number = self.text_extractor.clean_sku_text(vendor_part_number)
+        
+        # Fallback: pattern matching
+        if product_data.part_number == "N/A":
+            self._extract_part_number_by_pattern(element, product_data)
+    
+    def _extract_part_number_by_pattern(self, element: webdriver.remote.webelement.WebElement, 
+                                       product_data: ProductData) -> None:
+        """Extract part number using regex patterns."""
+        all_text = element.text
+        sku_patterns = [
+            r'SKU:?\s*([A-Za-z0-9\-]+)',
+            r'Part\s*#:?\s*([A-Za-z0-9\-]+)',
+            r'Item\s*#:?\s*([A-Za-z0-9\-]+)',
+            r'Model:?\s*([A-Za-z0-9\-]+)'
+        ]
+        
+        for pattern in sku_patterns:
+            match = re.search(pattern, all_text, re.IGNORECASE)
+            if match:
+                product_data.part_number = match.group(1)
+                break
+    
+    def _extract_price(self, element: webdriver.remote.webelement.WebElement, 
+                      product_data: ProductData, config: ScrapingConfig) -> None:
+        """Extract price from product element."""
+        for price_selector in config.product_price_selectors:
+            try:
+                price_element = element.find_element(By.CSS_SELECTOR, price_selector)
+                extracted_price = self.text_extractor.extract_price_from_element(price_element)
+                if extracted_price and extracted_price.strip():
+                    product_data.price = extracted_price
+                    break
+            except NoSuchElementException:
+                continue
+    
+    def _extract_quantity(self, element: webdriver.remote.webelement.WebElement, 
+                         product_data: ProductData, config: ScrapingConfig) -> None:
+        """Extract quantity from product element."""
+        total_quantity = 0
+        
+        for quantity_selector in config.product_quantity_selectors:
+            try:
+                quantity_elements = element.find_elements(By.CSS_SELECTOR, quantity_selector)
+                for quantity_element in quantity_elements:
+                    extracted_quantity = self.text_extractor.extract_quantity_from_element(quantity_element)
+                    if extracted_quantity is not None:
+                        total_quantity += extracted_quantity
+            except NoSuchElementException:
+                continue
+        
+        if total_quantity > 0:
+            product_data.quantity = str(total_quantity)
+    
+    def _extract_badges(self, element: webdriver.remote.webelement.WebElement, 
+                       product_data: ProductData, config: ScrapingConfig) -> None:
+        """Extract badge information from product element."""
+        # Extract general badges
+        for badge_selector in config.badges_selectors:
+            try:
+                badge_elements = element.find_elements(By.CSS_SELECTOR, badge_selector)
+                for badge in badge_elements:
+                    text = badge.text.strip().lower()
+                    if text == "partial match":
+                        product_data.partial_match = True
+                    elif text == "cross ref match":
+                        product_data.cross_ref_match = True
+            except NoSuchElementException:
+                pass
+        
+        # Extract exact match badges
+        for badge_selector in config.exact_match_selectors:
+            try:
+                badge_elements = element.find_elements(By.CSS_SELECTOR, badge_selector)
+                for badge in badge_elements:
+                    text = badge.text.strip().lower()
+                    if text == "exact match":
+                        product_data.exact_match = True
+            except NoSuchElementException:
+                pass
+    
+    def _debug_product_structure(self, element: webdriver.remote.webelement.WebElement, 
+                                index: int) -> None:
+        """Debug helper to understand product card structure."""
+        try:
+            print(f"\n=== DEBUGGING PRODUCT CARD {index} ===")
+            
+            # Get outer HTML for inspection
+            outer_html = element.get_attribute("outerHTML")
+            print(f"Card HTML (first 300 chars): {outer_html[:300]}...")
+            
+            # Find all links in the card
+            links = element.find_elements(By.TAG_NAME, "a")
+            print(f"Found {len(links)} links in card:")
+            for i, link in enumerate(links[:3]):  # Limit to first 3
+                href = link.get_attribute("href") or "N/A"
+                text = link.text.strip()[:50] or "N/A"
+                classes = link.get_attribute("class") or "N/A"
+                print(f"  Link {i}: href='{href}', text='{text}', classes='{classes}'")
+            
+            print(f"=== END DEBUG CARD {index} ===\n")
+            
+        except Exception as e:
+            print(f"Debug error for card {index}: {e}")
+
+
+# ========================
+# Screenshot Utility
+# ========================
+
+class ScreenshotManager:
+    """Manages screenshot capture for debugging."""
+    
+    def __init__(self, screenshot_dir: str = "debug_screenshots"):
+        self.screenshot_dir = screenshot_dir
+        os.makedirs(screenshot_dir, exist_ok=True)
+    
+    def take_screenshot(self, driver: webdriver.Chrome, filename: str, 
+                       description: str = "") -> Optional[str]:
+        """Take a screenshot for debugging purposes."""
+        try:
+            filepath = os.path.join(self.screenshot_dir, f"{filename}.png")
+            driver.save_screenshot(filepath)
+            print(f"📸 Screenshot saved: {filepath} ({description})")
+            return filepath
+        except Exception as e:
+            print(f"Failed to take screenshot: {e}")
+            return None
+    
+    def take_search_screenshot(self, driver: webdriver.Chrome, 
+                              search_term: str) -> Optional[str]:
+        """Take a screenshot specifically for search results."""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_search_term = re.sub(r'[^A-Za-z0-9]+', '_', search_term).strip('_')
+        filename = f"search_results_{safe_search_term}_{timestamp}"
+        return self.take_screenshot(driver, filename, "Search results loaded")
+
+
+# ========================
+# Main Web Scraper
+# ========================
+
+class WebScraper:
+    """Main web scraper that orchestrates all scraping operations."""
+    
+    def __init__(self, driver_manager: WebDriverManager, 
+                 enable_screenshots: bool = False):
+        self.driver_manager = driver_manager
+        self.element_locator = MultiSelectorElementLocator()
+        self.search_handler = SearchHandler(self.element_locator)
+        self.result_detector = ResultDetector(self.element_locator)
+        self.data_extractor = ProductDataExtractor(self.element_locator)
+        self.screenshot_manager = ScreenshotManager() if enable_screenshots else None
+        self._driver: Optional[webdriver.Chrome] = None
+    
+    @contextmanager
+    def driver_context(self):
+        """Context manager for WebDriver lifecycle management."""
+        self._driver = self.driver_manager.create_driver()
+        try:
+            yield self._driver
+        finally:
+            self.driver_manager.cleanup_driver(self._driver)
+            self._driver = None
+    
+    def scrape_site(self, search_term: str, site_config: SiteConfig, 
+                   debug_mode: bool = False) -> List[ProductData]:
+        """
+        Perform complete site scraping operation.
+        
+        Args:
+            search_term: Term to search for
+            site_config: Site-specific configuration
+            debug_mode: Enable debug mode for detailed logging
+            
+        Returns:
+            List of extracted product data
+            
+        Raises:
+            ScrapingError: If scraping operation fails
+        """
+        with self.driver_context() as driver:
+            try:
+                return self._perform_scraping(driver, search_term, site_config, debug_mode)
+            except Exception as e:
+                raise ScrapingError(f"Scraping failed for '{search_term}': {e}")
+    
+    def _perform_scraping(self, driver: webdriver.Chrome, search_term: str, 
+                         site_config: SiteConfig, debug_mode: bool) -> List[ProductData]:
+        """Perform the actual scraping operation."""
+        scraping_config = site_config.scraping_config
+        
+        # Step 1: Navigate to site
+        self._navigate_to_site(driver, site_config, scraping_config)
+        
+        # Step 2: Perform search
+        self.search_handler.perform_search(driver, search_term, scraping_config)
+        
+        # Step 3: Wait for results and handle loading
+        self._wait_for_search_results(driver, scraping_config)
+        
+        # Step 4: Check for no results
+        if self.result_detector.has_no_results(driver, search_term, scraping_config):
+            print(f"Search for '{search_term}' returned no results.")
+            return []
+        
+        # Step 5: Find product cards
+        product_cards = self.result_detector.find_product_cards(driver, scraping_config)
+        
+        if not product_cards:
+            print("No product cards found")
+            return []
+        
+        # Step 6: Take screenshot if enabled
+        if self.screenshot_manager:
+            self.screenshot_manager.take_search_screenshot(driver, search_term)
+        
+        # Step 7: Extract product data
+        return self._extract_all_product_data(product_cards, scraping_config, debug_mode)
+    
+    def _navigate_to_site(self, driver: webdriver.Chrome, site_config: SiteConfig, 
+                         scraping_config: ScrapingConfig) -> None:
+        """Navigate to target site with proper setup."""
+        try:
+            driver.set_page_load_timeout(scraping_config.page_load_timeout)
+            
+            print(f"Navigating to {site_config.target_url}")
+            driver.get(site_config.target_url)
+            print(f"Successfully navigated to {site_config.target_url}")
+            
+            PageLoadHandler.wait_for_page_load(driver, 10)
+            print(f"Page title: {driver.title}")
+            
+            # Handle modal popups
+            print("Checking for modal popups...")
+            ModalHandler.handle_modals(driver)
+            
+            # Additional wait for dynamic content
+            time.sleep(3)
+            
+        except Exception as e:
+            raise NavigationError(f"Failed to navigate to {site_config.target_url}: {e}")
+    
+    def _wait_for_search_results(self, driver: webdriver.Chrome, 
+                                config: ScrapingConfig) -> None:
+        """Wait for search results to load."""
+        print("Waiting for search results...")
+        
+        # Wait for search to process
+        time.sleep(3)
+        
+        # Handle any new modals
+        ModalHandler.handle_modals(driver)
+        
+        # Wait for page to finish loading
+        PageLoadHandler.wait_for_page_load(driver, 10)
+        
+        # Check for initial product card presence
+        product_card = self.element_locator.find_element(
+            driver, 
+            config.product_card_selectors,
+            timeout=10
+        )
+        
+        if not product_card:
+            print(f"No product cards found. Current URL: {driver.current_url}")
+            # Note: Not raising error here as it might be a no-results case
+        else:
+            print("Search results page loaded successfully")
+    
+    def _extract_all_product_data(self, product_cards: List[webdriver.remote.webelement.WebElement], 
+                                 config: ScrapingConfig, debug_mode: bool) -> List[ProductData]:
+        """Extract data from all product cards."""
+        results = []
+        max_results = min(len(product_cards), config.max_results_per_query)
+        
+        print(f"Starting to extract data from {len(product_cards)} product cards...")
+        print(f"Will process maximum {max_results} results")
+        
+        for i, card in enumerate(product_cards[:max_results]):
+            print(f"Scraping product {i+1} of {max_results}")
+            
+            try:
+                product_data = self.data_extractor.extract_product_data(
+                    card, config, i+1, debug=debug_mode
+                )
+                
+                if self._is_valid_product_data(product_data):
+                    results.append(product_data)
+                    title_preview = (product_data.title[:50] + '...' 
+                                   if len(product_data.title) > 50 else product_data.title)
+                    print(f"  ✓ Scraped Product {i+1}: {title_preview}")
+                else:
+                    print(f"  ✗ Skipped Product {i+1}: No meaningful data found")
+                    if debug_mode:
+                        print(f"    Data: {product_data}")
+                        
+            except Exception as e:
+                print(f"  ✗ Error extracting data from product {i+1}: {e}")
+                continue
+        
+        print(f"Successfully extracted data from {len(results)} products")
+        return results
+    
+    def _is_valid_product_data(self, product_data: ProductData) -> bool:
+        """Check if product data contains meaningful information."""
+        return ((product_data.title != "N/A" and product_data.title.strip()) or 
+                (product_data.url != "N/A" and product_data.url.strip()))
+
+
+# ========================
+# Factory and Builder Classes
+# ========================
+
+class ScraperBuilder:
+    """Builder for creating configured WebScraper instances."""
+    
+    def __init__(self):
+        self._chrome_config: Optional[ChromeConfig] = None
+        self._enable_screenshots: bool = False
+    
+    def with_chrome_config(self, chrome_config: ChromeConfig) -> 'ScraperBuilder':
+        """Set Chrome configuration."""
+        self._chrome_config = chrome_config
+        return self
+    
+    def with_screenshots(self, enable: bool = True) -> 'ScraperBuilder':
+        """Enable or disable screenshot capture."""
+        self._enable_screenshots = enable
+        return self
+    
+    def build(self) -> WebScraper:
+        """Build the WebScraper instance."""
+        if not self._chrome_config:
+            raise ValueError("Chrome configuration is required")
+        
+        driver_manager = ChromeDriverManager(self._chrome_config)
+        return WebScraper(driver_manager, self._enable_screenshots)
+
+
+# ========================
+# Convenience Functions and Backward Compatibility
+# ========================
+
+def create_scraper_from_config(chrome_config: ChromeConfig, 
+                              enable_screenshots: bool = False) -> WebScraper:
+    """
+    Create a WebScraper instance from configuration.
+    
+    Args:
+        chrome_config: Chrome browser configuration
+        enable_screenshots: Whether to enable screenshot capture
+        
+    Returns:
+        Configured WebScraper instance
+    """
+    return (ScraperBuilder()
+            .with_chrome_config(chrome_config)
+            .with_screenshots(enable_screenshots)
+            .build())
+
+
+def scrape_with_config(search_term: str, site_config: SiteConfig, 
+                      chrome_config: ChromeConfig, debug_mode: bool = False,
+                      enable_screenshots: bool = False) -> List[ProductData]:
+    """
+    Convenience function for one-off scraping operations.
+    
+    Args:
+        search_term: Term to search for
+        site_config: Site-specific configuration
+        chrome_config: Chrome browser configuration
+        debug_mode: Enable debug mode
+        enable_screenshots: Enable screenshot capture
+        
+    Returns:
+        List of extracted product data
+    """
+    scraper = create_scraper_from_config(chrome_config, enable_screenshots)
+    return scraper.scrape_site(search_term, site_config, debug_mode)
+
+
+# Backward compatibility functions
+def setup_driver_with_config(chrome_config: ChromeConfig) -> webdriver.Chrome:
+    """
+    Backward compatibility function for WebDriver setup.
+    
+    Note: Prefer using WebScraper with context manager for proper resource management.
+    """
+    driver_manager = ChromeDriverManager(chrome_config)
+    return driver_manager.create_driver()
+
+
+def scrape_site_with_config(driver: webdriver.Chrome, search_term: str, 
+                           site_config: SiteConfig, debug_mode: bool = False) -> List[Dict[str, Any]]:
+    """
+    Backward compatibility function for existing code.
+    
+    Note: This function doesn't properly manage WebDriver lifecycle.
+    Prefer using WebScraper class for new code.
+    """
+    # Create temporary scraper components
+    element_locator = MultiSelectorElementLocator()
+    search_handler = SearchHandler(element_locator)
+    result_detector = ResultDetector(element_locator)
+    data_extractor = ProductDataExtractor(element_locator)
+    
+    try:
+        scraping_config = site_config.scraping_config
+        
+        # Navigate to site
+        driver.set_page_load_timeout(scraping_config.page_load_timeout)
+        driver.get(site_config.target_url)
+        PageLoadHandler.wait_for_page_load(driver, 10)
+        ModalHandler.handle_modals(driver)
+        time.sleep(3)
+        
+        # Perform search
+        search_handler.perform_search(driver, search_term, scraping_config)
+        
+        # Wait for results
+        time.sleep(3)
+        ModalHandler.handle_modals(driver)
+        PageLoadHandler.wait_for_page_load(driver, 10)
+        
+        # Check for no results
+        if result_detector.has_no_results(driver, search_term, scraping_config):
+            return []
+        
+        # Find and extract data from product cards
+        product_cards = result_detector.find_product_cards(driver, scraping_config)
+        
+        if not product_cards:
+            return []
+        
+        results = []
+        max_results = min(len(product_cards), scraping_config.max_results_per_query)
+        
+        for i, card in enumerate(product_cards[:max_results]):
+            try:
+                product_data = data_extractor.extract_product_data(
+                    card, scraping_config, i+1, debug=debug_mode
+                )
+                
+                # Convert to dictionary for backward compatibility
+                if ((product_data.title != "N/A" and product_data.title.strip()) or 
+                    (product_data.url != "N/A" and product_data.url.strip())):
+                    results.append({
+                        "title": product_data.title,
+                        "part_number": product_data.part_number,
+                        "vendor_part_number": product_data.vendor_part_number,
+                        "url": product_data.url,
+                        "price": product_data.price,
+                        "quantity": product_data.quantity,
+                        "description": product_data.description,
+                        "partial_match": product_data.partial_match,
+                        "cross_ref_match": product_data.cross_ref_match,
+                        "exact_match": product_data.exact_match
+                    })
+            except Exception as e:
+                print(f"Error extracting data from product {i+1}: {e}")
+                continue
+        
+        return results
+        
+    except Exception as e:
+        print(f"Scraping error: {e}")
+        return []
+
+
+# ========================
+# Example Usage and Testing
+# ========================
+
+if __name__ == "__main__":
+    """Example usage and testing."""
+    import sys
+    from config.config_loader import load_config_for_site
+    
+    def main():
+        """Main testing function."""
+        try:
+            # Load configuration for a specific site
+            config = load_config_for_site("truckpro")
+            
+            # Create scraper with configuration
+            scraper = (ScraperBuilder()
+                      .with_chrome_config(config.chrome_config)
+                      .with_screenshots(config.deployment_config.enable_screenshots)
+                      .build())
+            
+            # Test queries
+            search_queries = ["gasket", "BK608", "brake pads", "nonexistent_part"]
+            all_results = {}
+            
+            print("Starting web scraping tests...")
+            
+            for query in search_queries:
+                print(f"\n--- Testing scrape for: {query} ---")
+                
+                try:
+                    scraped_data = scraper.scrape_site(
+                        query, 
+                        config.site_config, 
+                        debug_mode=(config.deployment_config.environment == "development")
+                    )
+                    
+                    all_results[query] = [
+                        {
+                            "title": product.title,
+                            "part_number": product.part_number,
+                            "vendor_part_number": product.vendor_part_number,
+                            "url": product.url,
+                            "price": product.price,
+                            "quantity": product.quantity,
+                            "partial_match": product.partial_match,
+                            "cross_ref_match": product.cross_ref_match,
+                            "exact_match": product.exact_match
+                        }
+                        for product in scraped_data
+                    ]
+                    
+                    print(f"--- Finished scrape for: {query}, Found {len(scraped_data)} results ---")
+                    
+                except ScrapingError as e:
+                    print(f"--- Scraping failed for: {query} - {e} ---")
+                    all_results[query] = []
+                
+                # Delay between searches
+                time.sleep(config.deployment_config.delay_between_searches)
+            
+            # Save results
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_file = f"scraper_test_results_{timestamp}.json"
+            
+            try:
+                import json
+                with open(output_file, "w") as f:
+                    json.dump(all_results, f, indent=4)
+                print(f"\nResults saved to {output_file}")
+            except Exception as e:
+                print(f"Error saving results: {e}")
+                
+        except Exception as e:
+            print(f"Test error: {e}")
+            sys.exit(1)
+    
+    main()

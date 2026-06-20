@@ -1,0 +1,249 @@
+
+import json
+import os
+from typing import Dict, Any, List, Optional
+from dataclasses import dataclass
+from config.config_loader import ConfigurationValidationError
+
+# ========================
+# Configuration Data Models
+# ========================
+
+@dataclass(frozen=True)
+class ScrapingConfig:
+    """Configuration for web scraping parameters."""
+    search_input_selectors: List[str]
+    search_button_selectors: List[str]
+    product_card_selectors: List[str]
+    product_link_selector: str
+    product_title_selectors: List[str]
+    product_sku_selectors: List[str]
+    product_price_selectors: List[str]
+    product_quantity_selectors: List[str]
+    badges_selectors: List[str]
+    exact_match_selectors: List[str]
+    no_results_selectors: List[str]
+    max_results_per_query: int
+    wait_timeout: int
+    page_load_timeout: int
+
+    def __post_init__(self):
+        """Validate configuration after initialization."""
+        self._validate()
+
+    def _validate(self) -> None:
+        """Validate scraping configuration parameters."""
+        errors = []
+
+        if not self.search_input_selectors:
+            errors.append("search_input_selectors cannot be empty")
+        
+        if not self.search_button_selectors:
+            errors.append("search_button_selectors cannot be empty")
+        
+        if not self.product_card_selectors:
+            errors.append("product_card_selectors cannot be empty")
+        
+        if not self.product_link_selector:
+            errors.append("product_link_selector is required")
+        
+        if self.max_results_per_query <= 0:
+            errors.append("max_results_per_query must be positive")
+        
+        if self.wait_timeout <= 0:
+            errors.append("wait_timeout must be positive")
+        
+        if self.page_load_timeout <= 0:
+            errors.append("page_load_timeout must be positive")
+
+        if errors:
+            raise ConfigurationValidationError(f"ScrapingConfig validation failed: {', '.join(errors)}")
+
+
+@dataclass(frozen=True)
+class OutputConfig:
+    """Configuration for output files."""
+    output_file: str
+    detailed_output_file: str
+
+    def __post_init__(self):
+        """Validate configuration after initialization."""
+        self._validate()
+
+    def _validate(self) -> None:
+        """Validate output configuration parameters."""
+        errors = []
+
+        if not self.output_file:
+            errors.append("output_file is required")
+        
+        if not self.detailed_output_file:
+            errors.append("detailed_output_file is required")
+
+        if errors:
+            raise ConfigurationValidationError(f"OutputConfig validation failed: {', '.join(errors)}")
+
+
+@dataclass(frozen=True)
+class SiteConfig:
+    """Configuration for a specific site."""
+    site_name: str
+    target_url: str
+    search_tasks: List[Dict[str, str]]
+    inventory_test_cases: List[Dict[str, str]]
+    scraping_config: ScrapingConfig
+    output_config: OutputConfig
+
+    def __post_init__(self):
+        """Validate configuration after initialization."""
+        self._validate()
+
+    def _validate(self) -> None:
+        """Validate site configuration parameters."""
+        errors = []
+
+        if not self.site_name:
+            errors.append("site_name is required")
+        
+        if not self.target_url:
+            errors.append("target_url is required")
+        
+        if not self.search_tasks:
+            errors.append("search_tasks cannot be empty")
+
+        if errors:
+            raise ConfigurationValidationError(f"SiteConfig validation failed: {', '.join(errors)}")
+
+
+@dataclass(frozen=True)
+class LLMConfig:
+    """Configuration for LLM/Ollama settings."""
+    ollama_api_endpoint: str
+    default_model: str
+    timeout: int
+    max_retries: int
+
+    def __post_init__(self):
+        """Validate configuration after initialization."""
+        self._validate()
+
+    def _validate(self) -> None:
+        """Validate LLM configuration parameters."""
+        errors = []
+
+        if not self.ollama_api_endpoint:
+            errors.append("ollama_api_endpoint is required")
+        
+        if not self.default_model:
+            errors.append("default_model is required")
+        
+        if self.timeout <= 0:
+            errors.append("timeout must be positive")
+        
+        if self.max_retries < 0:
+            errors.append("max_retries must be non-negative")
+
+        if errors:
+            raise ConfigurationValidationError(f"LLMConfig validation failed: {', '.join(errors)}")
+
+
+@dataclass(frozen=True)
+class EvaluationConfig:
+    """Configuration for evaluation parameters."""
+    enable_inventory_ranking: bool
+    enable_detailed_analysis: bool
+    inventory_weight_factor: float
+    apply_post_ranking: bool
+    low_stock_threshold: int
+
+    def __post_init__(self):
+        """Validate configuration after initialization."""
+        self._validate()
+
+    def _validate(self) -> None:
+        """Validate evaluation configuration parameters."""
+        errors = []
+
+        if not (0.0 <= self.inventory_weight_factor <= 1.0):
+            errors.append("inventory_weight_factor must be between 0.0 and 1.0")
+        
+        if self.low_stock_threshold < 0:
+            errors.append("low_stock_threshold must be non-negative")
+
+        if errors:
+            raise ConfigurationValidationError(f"EvaluationConfig validation failed: {', '.join(errors)}")
+
+
+@dataclass(frozen=True)
+class ChromeConfig:
+    """Configuration for Chrome browser settings."""
+    chrome_driver_path: Optional[str]
+    headless: bool
+    window_size: Dict[str, int]
+    implicit_wait: int
+    user_agent: str
+
+    def __post_init__(self):
+        """Validate configuration after initialization."""
+        self._validate()
+
+    def _validate(self) -> None:
+        """Validate Chrome configuration parameters."""
+        errors = []
+
+        if not self.window_size or 'width' not in self.window_size or 'height' not in self.window_size:
+            errors.append("window_size must contain 'width' and 'height' keys")
+        
+        if self.window_size and (self.window_size.get('width', 0) <= 0 or self.window_size.get('height', 0) <= 0):
+            errors.append("window_size width and height must be positive")
+        
+        if self.implicit_wait < 0:
+            errors.append("implicit_wait must be non-negative")
+        
+        if not self.user_agent:
+            errors.append("user_agent is required")
+
+        if errors:
+            raise ConfigurationValidationError(f"ChromeConfig validation failed: {', '.join(errors)}")
+
+
+@dataclass(frozen=True)
+class DeploymentConfig:
+    """Configuration for deployment settings."""
+    environment: str
+    log_level: str
+    enable_screenshots: bool
+    delay_between_searches: int
+    enable_metrics_collection: bool
+
+    def __post_init__(self):
+        """Validate configuration after initialization."""
+        self._validate()
+
+    def _validate(self) -> None:
+        """Validate deployment configuration parameters."""
+        errors = []
+
+        valid_environments = {'development', 'staging', 'production'}
+        if self.environment not in valid_environments:
+            errors.append(f"environment must be one of {valid_environments}")
+        
+        valid_log_levels = {'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'}
+        if self.log_level not in valid_log_levels:
+            errors.append(f"log_level must be one of {valid_log_levels}")
+        
+        if self.delay_between_searches < 0:
+            errors.append("delay_between_searches must be non-negative")
+
+        if errors:
+            raise ConfigurationValidationError(f"DeploymentConfig validation failed: {', '.join(errors)}")
+
+
+@dataclass(frozen=True)
+class AppConfig:
+    """Main application configuration containing all sub-configurations."""
+    site_config: SiteConfig
+    llm_config: LLMConfig
+    evaluation_config: EvaluationConfig
+    chrome_config: ChromeConfig
+    deployment_config: DeploymentConfig
